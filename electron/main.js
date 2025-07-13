@@ -1,13 +1,11 @@
-import electron from 'electron';
+const electron = require('electron');
 const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, shell, clipboard, desktopCapturer, screen } = electron;
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import fs from 'fs';
-import { exec } from 'child_process';
-import robot from 'robotjs';
+const { join } = require('path');
+const fs = require('fs');
+const { exec } = require('child_process');
+const robot = require('robotjs');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// __dirname is automatically available in CommonJS
 const isDev = process.env.NODE_ENV === 'development';
 
 let mainWindow;

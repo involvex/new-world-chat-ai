@@ -70,7 +70,8 @@
       "electron/**/*",
       "package.json",
       "!node_modules/**/*",
-      "node_modules/@google/genai/**/*"
+      "node_modules/@google/genai/**/*",
+      "node_modules/robotjs/**/*"
     ],
     "extraResources": [
       {
