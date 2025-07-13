@@ -3,7 +3,38 @@ const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, shell, 
 const { join } = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
-const robot = require('robotjs');
+
+// Handle robotjs with error handling for production builds
+let robot;
+try {
+  robot = require('robotjs');
+  console.log('RobotJS loaded successfully');
+} catch (error) {
+  console.warn('RobotJS failed to load:', error.message);
+  console.warn('Screenshot and automation features will be disabled');
+  // Create a mock robot object to prevent crashes
+  robot = {
+    screen: {
+      capture: () => {
+        throw new Error('RobotJS not available - screenshot functionality disabled');
+      }
+    },
+    typeString: () => {
+      console.warn('RobotJS not available - typing functionality disabled');
+    },
+    keyTap: () => {
+      console.warn('RobotJS not available - key automation disabled');
+    },
+    getMousePos: () => {
+      console.warn('RobotJS not available - mouse position disabled');
+      return { x: 0, y: 0 };
+    },
+    getScreenSize: () => {
+      console.warn('RobotJS not available - screen size disabled');
+      return { width: 1920, height: 1080 };
+    }
+  };
+}
 
 // __dirname is automatically available in CommonJS
 const isDev = process.env.NODE_ENV === 'development';
