@@ -25,16 +25,46 @@
     "electron-prod": "npm run build && cross-env NODE_ENV=production electron .",
     "build-electron": "npm run build && electron-builder",
     "dist": "npm run build && electron-builder --publish=never",
-    "release": "npm run clean && npm run typecheck && npm run build && electron-builder --publish=never",
-    "release:win": "npm run clean && npm run typecheck && npm run build && electron-builder --win --publish=never",
-    "release:mac": "npm run clean && npm run typecheck && npm run build && electron-builder --mac --publish=never",
-    "release:linux": "npm run clean && npm run typecheck && npm run build && electron-builder --linux --publish=never",
-    "prerelease": "npm run clean && npm run typecheck && npm run build && electron-builder --publish=never",
+    "prebuild": "npm run clean:build && npm run check:env",
+    "postbuild": "npm run validate:build",
+    "prerelease": "npm run validate:all",
+    "release": "npm run clean && npm run typecheck && npm run build && npm run package:all",
+    "release:win": "npm run clean && npm run typecheck && npm run build && npm run package:win",
+    "release:mac": "npm run clean && npm run typecheck && npm run build && npm run package:mac",
+    "release:linux": "npm run clean && npm run typecheck && npm run build && npm run package:linux",
+    "package:all": "npm run package:win && echo 'Windows build complete' || npm run handle:build-error",
+    "package:win": "node scripts/robust-builder.cjs win || npm run handle:build-error",
+    "package:mac": "node scripts/robust-builder.cjs mac || npm run handle:build-error",
+    "package:linux": "node scripts/robust-builder.cjs linux || npm run handle:build-error",
+    "handle:build-error": "echo 'Build failed - checking for partial builds...' && npm run recover:build",
+    "recover:build": "node scripts/build-validator.cjs recover",
+    "validate:all": "node scripts/build-validator.cjs validate",
+    "validate:deps": "node scripts/build-validator.cjs deps",
+    "validate:icons": "node scripts/build-validator.cjs icons",
+    "validate:build": "node scripts/build-validator.cjs build",
+    "check:env": "node scripts/build-validator.cjs env",
+    "clean": "node scripts/robust-cleanup.cjs all",
+    "clean:all": "node scripts/robust-cleanup.cjs all",
+    "clean:build": "node scripts/robust-cleanup.cjs build",
+    "clean:cache": "node scripts/robust-cleanup.cjs cache",
+    "clean:temp": "node scripts/robust-cleanup.cjs temp",
+    "kill:processes": "node scripts/robust-cleanup.cjs kill",
     "lint": "echo 'Add linting if needed'",
     "test": "echo 'Add tests if needed'",
-    "clean": "rimraf dist dist-electron",
     "typecheck": "tsc --noEmit",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "release:auto": "node scripts/auto-release.cjs",
+    "release:auto:win": "node scripts/auto-release.cjs win",
+    "release:auto:mac": "node scripts/auto-release.cjs mac",
+    "release:auto:linux": "node scripts/auto-release.cjs linux",
+    "git:status": "git status --porcelain",
+    "git:push": "git push origin main && git push --tags",
+    "version:patch": "npm version patch && npm run release:auto",
+    "version:minor": "npm version minor && npm run release:auto",
+    "version:major": "npm version major && npm run release:auto",
+    "release:simple": "node scripts/simple-release.cjs",
+    "release:ps": "pwsh -ExecutionPolicy Bypass -File scripts/auto-release.ps1",
+    "release:full": "pwsh -ExecutionPolicy Bypass -File scripts/auto-release.ps1"
   },
   "dependencies": {
     "@google/genai": "^1.9.0",
@@ -62,6 +92,7 @@
   "build": {
     "appId": "com.involvex.new-world-chat-ai",
     "productName": "New World Chat AI",
+    "buildVersion": "${env.BUILD_NUMBER}",
     "directories": {
       "output": "dist-electron",
       "buildResources": "build"
@@ -69,7 +100,11 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
-      "package.json"
+      "package.json",
+      "!node_modules/**/*",
+      "!src/**/*",
+      "!scripts/**/*",
+      "!*.log"
     ],
     "extraResources": [
       {
@@ -80,6 +115,10 @@
         ]
       }
     ],
+    "compression": "normal",
+    "nodeGypRebuild": false,
+    "buildDependenciesFromSource": false,
+    "npmRebuild": false,
     "win": {
       "target": [
         {
@@ -96,12 +135,17 @@
         }
       ],
       "icon": "build/icon.png",
-      "requestedExecutionLevel": "asInvoker"
+      "requestedExecutionLevel": "asInvoker",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "publisherName": "Ina Venox"
     },
     "mac": {
       "target": "dmg",
       "icon": "build/icon.icns",
-      "category": "public.app-category.games"
+      "category": "public.app-category.games",
+      "artifactName": "${productName}-${version}.${ext}",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
     },
     "linux": {
       "target": [
@@ -119,27 +163,33 @@
         }
       ],
       "icon": "build/icon.png",
-      "category": "Game"
+      "category": "Game",
+      "artifactName": "${productName}-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "New World Chat AI"
+      "shortcutName": "New World Chat AI",
+      "artifactName": "${productName} Setup ${version}.${ext}",
+      "deleteAppDataOnUninstall": false
     },
     "portable": {
-      "artifactName": "NewWorldChatAI-${version}-portable.exe"
+      "artifactName": "${productName}-${version}-portable.${ext}"
     },
     "dmg": {
       "title": "New World Chat AI ${version}",
-      "artifactName": "NewWorldChatAI-${version}.dmg"
+      "artifactName": "${productName}-${version}.${ext}",
+      "writeUpdateInfo": false
     },
     "appImage": {
-      "artifactName": "NewWorldChatAI-${version}.AppImage"
+      "artifactName": "${productName}-${version}.${ext}"
     },
     "deb": {
-      "artifactName": "NewWorldChatAI-${version}.deb"
-    }
+      "artifactName": "${productName}-${version}.${ext}"
+    },
+    "afterSign": "scripts/notarize.js",
+    "afterPack": "scripts/after-pack.js"
   }
 }
