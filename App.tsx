@@ -103,16 +103,29 @@ Notification.displayName = 'Notification';
 
 interface ResponseCardProps {
   chatMessage: ChatMessage;
+  onPasteToNewWorld?: (message: string) => void;
 }
 
-const ResponseCard = memo<ResponseCardProps>(({ chatMessage }) => {
+const ResponseCard = memo<ResponseCardProps>(({ chatMessage, onPasteToNewWorld }) => {
   const [copied, setCopied] = useState(false);
+  const [pasting, setPasting] = useState(false);
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(chatMessage.message);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [chatMessage.message]);
+
+  const handlePasteToNewWorld = useCallback(async () => {
+    if (onPasteToNewWorld) {
+      setPasting(true);
+      try {
+        await onPasteToNewWorld(chatMessage.message);
+      } finally {
+        setPasting(false);
+      }
+    }
+  }, [chatMessage.message, onPasteToNewWorld]);
 
   // Memoize icons to prevent re-creation
   const ClipboardIcon = useMemo(() => (
@@ -127,6 +140,12 @@ const ResponseCard = memo<ResponseCardProps>(({ chatMessage }) => {
     </svg>
   ), []);
 
+  const GameIcon = useMemo(() => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 011-1h1a2 2 0 100-4H7a1 1 0 01-1-1V8a1 1 0 011-1h3a1 1 0 001-1V4z" />
+    </svg>
+  ), []);
+
   const buttonClassName = useMemo(() => 
     `p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 ${
       copied 
@@ -134,16 +153,37 @@ const ResponseCard = memo<ResponseCardProps>(({ chatMessage }) => {
         : 'bg-gray-600 text-gray-300 hover:bg-cyan-500 hover:text-white focus:ring-cyan-400'
     }`, [copied]);
 
+  const pasteButtonClassName = useMemo(() => 
+    `p-2 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 ${
+      pasting 
+        ? 'bg-blue-500 text-white focus:ring-blue-400 animate-pulse' 
+        : 'bg-gray-600 text-gray-300 hover:bg-blue-500 hover:text-white focus:ring-blue-400'
+    }`, [pasting]);
+
   return (
     <div className="bg-gray-800 rounded-lg p-4 flex items-center justify-between shadow-lg transition-all duration-300 hover:bg-gray-700 hover:shadow-cyan-500/10">
-      <p className="text-lg font-mono text-gray-200">{chatMessage.message}</p>
-      <button
-        onClick={handleCopy}
-        className={buttonClassName}
-        aria-label="Copy message"
-      >
-        {copied ? CheckIcon : ClipboardIcon}
-      </button>
+      <p className="text-lg font-mono text-gray-200 flex-1 mr-4">{chatMessage.message}</p>
+      <div className="flex space-x-2">
+        <button
+          onClick={handleCopy}
+          className={buttonClassName}
+          aria-label="Copy message"
+          title="Copy to clipboard"
+        >
+          {copied ? CheckIcon : ClipboardIcon}
+        </button>
+        {onPasteToNewWorld && (
+          <button
+            onClick={handlePasteToNewWorld}
+            className={pasteButtonClassName}
+            aria-label="Paste to New World"
+            title="Auto-paste to New World chat"
+            disabled={pasting}
+          >
+            {GameIcon}
+          </button>
+        )}
+      </div>
     </div>
   );
 });
@@ -218,6 +258,8 @@ function App() {
   // App config state managed in SettingsModal
   const [currentMessageSet, setCurrentMessageSet] = useState<SavedMessageSet | null>(null);
   const [saveNotification, setSaveNotification] = useState<string | null>(null);
+  const [customPrompts, setCustomPrompts] = useState<any[]>([]);
+  const [selectedCustomPrompt, setSelectedCustomPrompt] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Save preferences to localStorage
@@ -232,7 +274,12 @@ function App() {
   // Load app configuration on mount
   useEffect(() => {
     if (window.electronAPI) {
-    // Config is managed in SettingsModal
+      // Load custom prompts
+      window.electronAPI.getCustomPrompts().then((prompts) => {
+        setCustomPrompts(prompts);
+      }).catch((error) => {
+        console.error('Failed to load custom prompts:', error);
+      });
     }
   }, []);
 
@@ -489,7 +536,7 @@ function App() {
     }
   }, [currentMessageSet, screenshotUrl, isFunnier, responses]);
 
-  const handleGeneration = useCallback(async (makeItFunnier: boolean = false, imageUrl?: string) => {
+  const handleGeneration = useCallback(async (makeItFunnier: boolean = false, imageUrl?: string, customPromptId?: string) => {
     // If we have a current message set, continue from it
     if (currentMessageSet && responses) {
       return handleContinueFromSaved(makeItFunnier);
@@ -510,7 +557,15 @@ function App() {
     setError(null);
     setResponses(null); // Clear previous responses before fetching new ones
     try {
-      const result = await generateChatResponses(imageToUse, funninessLevel);
+      // Get custom prompt if provided
+      let customPrompt = '';
+      if (customPromptId && window.electronAPI) {
+        const prompts = await window.electronAPI.getCustomPrompts();
+        const prompt = prompts.find(p => p.id === customPromptId);
+        customPrompt = prompt?.prompt || '';
+      }
+      
+      const result = await generateChatResponses(imageToUse, funninessLevel, customPrompt);
       setResponses(result);
       // Clear current message set when generating new messages
       setCurrentMessageSet(null);
@@ -524,6 +579,24 @@ function App() {
       setIsLoading(false);
     }
   }, [screenshotUrl, isFunnier, currentMessageSet, responses, handleContinueFromSaved]);
+
+  const handlePasteToNewWorld = useCallback(async (message: string) => {
+    if (window.electronAPI) {
+      try {
+        const result = await window.electronAPI.pasteToNewWorld(message);
+        if (result.success) {
+          setNotification("🎮 Message pasted to New World chat!");
+          setTimeout(() => setNotification(null), 3000);
+        } else {
+          setError(`Auto-paste failed: ${result.error}`);
+        }
+      } catch (error) {
+        setError('Failed to paste to New World: ' + (error instanceof Error ? error.message : String(error)));
+      }
+    } else {
+      setError("Auto-paste is only available in the desktop app");
+    }
+  }, []);
 
   const handleTakeScreenshot = useCallback(async () => {
     if (window.electronAPI) {
@@ -781,6 +854,33 @@ function App() {
                       >
                         {isLoading ? 'Making it funnier...' : isFunnier ? '✨ Maximum Funniness! ✨' : currentMessageSet ? 'Continue with Funnier' : 'Make it Funnier!'}
                       </button>
+                      
+                      {/* Custom Prompts Dropdown */}
+                      {customPrompts.length > 0 && (
+                        <div className="relative">
+                          <select
+                            value={selectedCustomPrompt}
+                            onChange={(e) => {
+                              const promptId = e.target.value;
+                              if (promptId) {
+                                setSelectedCustomPrompt(promptId);
+                                handleGeneration(false, undefined, promptId);
+                              }
+                            }}
+                            disabled={isLoading}
+                            title="Select a custom prompt"
+                            aria-label="Custom prompts"
+                            className="bg-gradient-to-r from-orange-600 to-orange-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:from-orange-500 hover:to-orange-400 transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100"
+                          >
+                            <option value="">🎯 Custom Prompts</option>
+                            {customPrompts.map(prompt => (
+                              <option key={prompt.id} value={prompt.id} className="bg-gray-800 text-white">
+                                {prompt.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -822,7 +922,11 @@ function App() {
                     </div>
                   </div>
                   {responses.chatMessages.map((msg, index) => (
-                    <ResponseCard key={`${msg.message}-${index}`} chatMessage={msg} />
+                    <ResponseCard 
+                      key={`${msg.message}-${index}`} 
+                      chatMessage={msg} 
+                      onPasteToNewWorld={window.electronAPI ? handlePasteToNewWorld : undefined}
+                    />
                   ))}
                 </div>
               )}

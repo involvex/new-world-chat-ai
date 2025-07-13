@@ -22,6 +22,9 @@ interface ElectronAPI {
   // Screenshot functionality
   takeScreenshot: () => Promise<{ success: boolean; dataUrl?: string; error?: string }>;
   
+  // Auto-paste to New World
+  pasteToNewWorld: (message: string) => Promise<{ success: boolean; error?: string }>;
+  
   // Utility methods
   invoke: (channel: string, data?: any) => Promise<any>;
   platform: string;

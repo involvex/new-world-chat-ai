@@ -96,7 +96,7 @@ const responseSchema = {
   required: ["chatMessages"]
 };
 
-export const generateChatResponses = async (imageUrl: string, isFunnier: boolean = false): Promise<ApiResponse> => {
+export const generateChatResponses = async (imageUrl: string, isFunnier: boolean = false, customPrompt: string = ''): Promise<ApiResponse> => {
   try {
     console.log('Generating chat responses for image:', imageUrl.substring(0, 50) + '...');
     
@@ -110,9 +110,9 @@ export const generateChatResponses = async (imageUrl: string, isFunnier: boolean
       },
     };
 
-    const basePrompt = "You are a hilarious AI assistant for the MMORPG New World. Your task is to generate funny, context-aware chat messages full of stupid jokes that a player could use. Based on the provided screenshot, generate 5 distinct chat messages. The messages should sound like a real player who isn't very serious and loves to joke around.";
+    const basePrompt = customPrompt || "You are a hilarious AI assistant for the MMORPG New World. Your task is to generate funny, context-aware chat messages full of stupid jokes that a player could use. Based on the provided screenshot, generate 5 distinct chat messages. The messages should sound like a real player who isn't very serious and loves to joke around.";
     
-    const funnyPrompt = "You are an absolutely UNHINGED AI comedian for the MMORPG New World. Your goal is to generate the most absurd, nonsensical, and stupidly funny chat messages imaginable based on the screenshot. Go completely over the top. Think chaotic goblin energy. The player wants to spam chat with pure nonsense.";
+    const funnyPrompt = customPrompt || "You are an absolutely UNHINGED AI comedian for the MMORPG New World. Your goal is to generate the most absurd, nonsensical, and stupidly funny chat messages imaginable based on the screenshot. Go completely over the top. Think chaotic goblin energy. The player wants to spam chat with pure nonsense.";
     
     const punctuationRule = " CRUCIAL RULE: Every message you generate must not contain any special characters or punctuation. This means no commas, periods, apostrophes, quotation marks, hyphens, etc. Only use letters and spaces.";
 
@@ -140,6 +140,44 @@ export const generateChatResponses = async (imageUrl: string, isFunnier: boolean
     
     const jsonString = result.text?.trim() || '';
     if (!jsonString) {
+      console.warn('Empty response from API, retrying with simpler request...');
+      // Retry once with a simpler prompt
+      const retryResult = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: { 
+          parts: [
+            imagePart,
+            { text: "Generate 3 short chat messages for this New World screenshot. Return JSON with format: {\"chatMessages\":[{\"message\":\"text\"}]}. Use only letters and spaces." }
+          ] 
+        },
+        config: {
+          responseMimeType: "application/json",
+          maxOutputTokens: 500,
+        }
+      });
+      
+      const retryJsonString = retryResult.text?.trim() || '';
+      if (!retryJsonString) {
+        throw new Error("Empty response received from API after retry.");
+      }
+      
+      // Use the retry result
+      try {
+        const retryJson = JSON.parse(retryJsonString) as ApiResponse;
+        if (retryJson.chatMessages && retryJson.chatMessages.length > 0) {
+          console.log('Retry successful, got', retryJson.chatMessages.length, 'messages');
+          // Apply same sanitization
+          retryJson.chatMessages = retryJson.chatMessages
+            .map(item => ({
+              message: item.message.replace(/[^a-zA-Z\s]/g, '').trim()
+            }))
+            .filter(item => item.message.length > 0);
+          return retryJson;
+        }
+      } catch (retryParseError) {
+        console.error('Retry parse error:', retryParseError);
+      }
+      
       throw new Error("Empty response received from API.");
     }
     

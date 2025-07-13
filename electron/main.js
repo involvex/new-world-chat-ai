@@ -498,6 +498,63 @@ ipcMain.handle('take-screenshot', async () => {
   }
 });
 
+// Auto-paste to New World
+ipcMain.handle('paste-to-new-world', async (event, message) => {
+  try {
+    const { exec } = require('child_process');
+    const robot = require('robotjs');
+    
+    // Store current clipboard content
+    const originalClipboard = clipboard.readText();
+    
+    // Set message to clipboard
+    clipboard.writeText(message);
+    
+    // Try to find and focus New World window
+    const windows = await new Promise((resolve, reject) => {
+      exec('tasklist /FI "IMAGENAME eq NewWorld.exe" /FO CSV', (error, stdout) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        const lines = stdout.split('\n');
+        const isRunning = lines.some(line => line.includes('NewWorld.exe'));
+        resolve(isRunning);
+      });
+    });
+    
+    if (!windows) {
+      throw new Error('New World is not running');
+    }
+    
+    // Find New World window and activate it
+    exec('powershell -Command "Add-Type -AssemblyName Microsoft.VisualBasic; [Microsoft.VisualBasic.Interaction]::AppActivate(\\"New World\\")"', (error) => {
+      if (error) {
+        console.warn('Could not focus New World window:', error);
+      }
+    });
+    
+    // Small delay to ensure window is focused
+    setTimeout(() => {
+      // Press Enter to open chat, paste message, press Enter to send
+      robot.keyTap('enter'); // Open chat
+      setTimeout(() => {
+        robot.keyTap('v', 'ctrl'); // Paste
+        setTimeout(() => {
+          robot.keyTap('enter'); // Send message
+          // Restore original clipboard
+          clipboard.writeText(originalClipboard);
+        }, 100);
+      }, 200);
+    }, 500);
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Auto-paste failed:', error);
+    return { success: false, error: error.message };
+  }
+});
+
 // Message history IPC handlers
 ipcMain.handle('get-message-history', () => {
   return loadMessageHistory();

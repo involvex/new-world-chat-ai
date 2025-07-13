@@ -2,7 +2,7 @@
   "name": "new-world-chat-ai",
   "description": "Generate multiple in-game chat responses for the MMORPG 'New World' based on a screenshot. The generated messages contain no special characters, making them perfect for quick copy-pasting into chat.",
   "private": false,
-  "version": "1.0.2",
+  "version": "1.1.0",
   "type": "module",
   "author": {
     "name": "Involvex"
@@ -36,7 +36,8 @@
   "dependencies": {
     "@google/genai": "^1.9.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "robotjs": "^0.6.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
@@ -70,18 +71,24 @@
       {
         "from": "build/",
         "to": "build/",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "win": {
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build/icon.ico",
@@ -96,11 +103,15 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "deb",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build/icon.png",
@@ -128,4 +139,3 @@
     }
   }
 }
-  
