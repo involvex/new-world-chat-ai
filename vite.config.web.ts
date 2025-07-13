@@ -8,6 +8,18 @@ export default defineConfig({
   build: {
     outDir: 'docs',
     emptyOutDir: true,
+    rollupOptions: {
+      external: ['robotjs', 'electron', 'fs', 'path', 'os'],
+      output: {
+        globals: {
+          'robotjs': 'robotjs',
+          'electron': 'electron',
+          'fs': 'fs',
+          'path': 'path',
+          'os': 'os'
+        }
+      }
+    },
   },
   resolve: {
     alias: {
@@ -16,5 +28,9 @@ export default defineConfig({
   },
   define: {
     'import.meta.env.VITE_IS_WEB': 'true',
+    'global': 'globalThis',
   },
+  optimizeDeps: {
+    exclude: ['robotjs', 'electron']
+  }
 })
