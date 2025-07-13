@@ -136,8 +136,7 @@
       ],
       "icon": "build/icon.png",
       "requestedExecutionLevel": "asInvoker",
-      "artifactName": "${productName}-${version}-${arch}.${ext}",
-      "publisherName": "Ina Venox"
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "mac": {
       "target": "dmg",
