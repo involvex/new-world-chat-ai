@@ -21,6 +21,7 @@ interface AppConfig {
   selectedPrompt: string;
   startMinimized: boolean;
   showInTaskbar: boolean;
+  geminiApiKey?: string;
 }
 
 interface SettingsModalProps {
@@ -31,13 +32,15 @@ interface SettingsModalProps {
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfigUpdate }) => {
   const [config, setConfig] = useState<AppConfig | null>(null);
-  const [activeTab, setActiveTab] = useState<'hotkeys' | 'prompts' | 'general'>('hotkeys');
+  const [activeTab, setActiveTab] = useState<'hotkeys' | 'prompts' | 'general' | 'api'>('hotkeys');
   const [isAddingPrompt, setIsAddingPrompt] = useState(false);
   const [newPrompt, setNewPrompt] = useState({ name: '', prompt: '' });
+  const [geminiApiKey, setGeminiApiKey] = useState<string>('');
 
   useEffect(() => {
     if (isOpen && window.electronAPI) {
       loadConfig();
+      loadApiKey();
     }
   }, [isOpen]);
 
@@ -47,6 +50,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
       setConfig(appConfig);
     } catch (error) {
       console.error('Failed to load config:', error);
+    }
+  };
+
+  const loadApiKey = async () => {
+    try {
+      const apiKey = await window.electronAPI.getGeminiApiKey();
+      setGeminiApiKey(apiKey);
+    } catch (error) {
+      console.error('Failed to load API key:', error);
     }
   };
 
@@ -60,6 +72,20 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
     } catch (error) {
       console.error('Failed to save config:', error);
     }
+  };
+
+  const saveApiKey = async () => {
+    try {
+      await window.electronAPI.saveGeminiApiKey(geminiApiKey);
+      // Show success message or close modal
+    } catch (error) {
+      console.error('Failed to save API key:', error);
+    }
+  };
+
+  const validateApiKey = (key: string): boolean => {
+    // Basic validation - Gemini API keys typically start with 'AIzaSy' and are about 39 characters
+    return key.length === 0 || (key.startsWith('AIzaSy') && key.length === 39);
   };
 
   const handleHotkeyChange = (key: keyof HotkeyConfig, value: string) => {
@@ -152,6 +178,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
                 }`}
               >
                 🔧 General
+              </button>
+              <button
+                onClick={() => setActiveTab('api')}
+                className={`flex-shrink-0 lg:w-full text-left px-3 lg:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
+                  activeTab === 'api' ? 'bg-cyan-600 text-white' : 'text-gray-300 hover:bg-gray-700'
+                }`}
+              >
+                🔑 API Key
               </button>
             </nav>
           </div>
@@ -381,11 +415,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
                       <p className="text-sm text-gray-400">Start the app minimized to system tray</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
+                      <label htmlFor="start-minimized-checkbox" className="sr-only">
+                        Start Minimized
+                      </label>
                       <input
+                        id="start-minimized-checkbox"
                         type="checkbox"
                         className="sr-only peer"
                         checked={config.startMinimized}
                         onChange={(e) => setConfig({ ...config, startMinimized: e.target.checked })}
+                        title="Start Minimized"
+                        placeholder="Start Minimized"
                       />
                       <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-300/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
                     </label>
@@ -398,14 +438,100 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
+                        id="show-in-taskbar-checkbox"
                         type="checkbox"
                         className="sr-only peer"
                         checked={config.showInTaskbar}
                         onChange={(e) => setConfig({ ...config, showInTaskbar: e.target.checked })}
+                        title="Show in Taskbar"
+                        aria-label="Show in Taskbar"
                       />
                       <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-300/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+                      <label htmlFor="show-in-taskbar-checkbox" className="sr-only">
+                        Show in Taskbar
+                      </label>
                     </label>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'api' && (
+              <div>
+                <h3 className="text-2xl font-bold text-gray-200 mb-6">🔑 API Configuration</h3>
+                
+                <div className="space-y-6">
+                  <div className="bg-blue-900/20 border border-blue-700/50 rounded-lg p-4">
+                    <div className="flex items-start space-x-3">
+                      <div className="text-blue-400 text-lg">💡</div>
+                      <div>
+                        <h4 className="font-semibold text-blue-300 mb-2">About API Keys</h4>
+                        <p className="text-blue-200 text-sm mb-2">
+                          This app uses Google's Gemini AI to generate chat messages. You can optionally provide your own API key for unlimited usage.
+                        </p>
+                        <p className="text-blue-200 text-sm">
+                          <strong>Leave empty to use the default key</strong> (shared with rate limits) or get your own free key from <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-100">Google AI Studio</a>.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="gemini-api-key" className="block text-sm font-semibold text-gray-200 mb-2">
+                      Gemini API Key (Optional)
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="gemini-api-key"
+                        type="password"
+                        value={geminiApiKey}
+                        onChange={(e) => setGeminiApiKey(e.target.value)}
+                        placeholder="Leave empty to use default key, or paste your API key here..."
+                        className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                          geminiApiKey && !validateApiKey(geminiApiKey) 
+                            ? 'border-red-500 focus:ring-red-500' 
+                            : 'border-gray-600'
+                        }`}
+                      />
+                      {geminiApiKey && !validateApiKey(geminiApiKey) && (
+                        <div className="absolute right-2 top-2 text-red-400">
+                          <i className="fas fa-exclamation-triangle"></i>
+                        </div>
+                      )}
+                    </div>
+                    {geminiApiKey && !validateApiKey(geminiApiKey) && (
+                      <p className="text-red-400 text-xs mt-1">
+                        Invalid API key format. Should start with 'AIzaSy' and be 39 characters long.
+                      </p>
+                    )}
+                    {geminiApiKey && validateApiKey(geminiApiKey) && (
+                      <p className="text-green-400 text-xs mt-1">
+                        ✓ Valid API key format
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-4">
+                    <div className="flex items-start space-x-3">
+                      <div className="text-yellow-400 text-lg">⚠️</div>
+                      <div>
+                        <h4 className="font-semibold text-yellow-300 mb-2">Security Notice</h4>
+                        <ul className="text-yellow-200 text-sm space-y-1">
+                          <li>• Your API key is stored locally and never shared</li>
+                          <li>• Only you have access to your personal API key</li>
+                          <li>• You can remove it at any time by clearing this field</li>
+                          <li>• Get a free API key with generous quota at Google AI Studio</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={saveApiKey}
+                    className="w-full sm:w-auto px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors text-sm font-medium"
+                  >
+                    Save API Key
+                  </button>
                 </div>
               </div>
             )}

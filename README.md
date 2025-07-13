@@ -94,6 +94,8 @@ New World Chat AI is a powerful desktop application that uses Google's Gemini AI
 - **Storage**: 200MB free space
 - **Network**: Internet connection for AI generation
 - **Game**: New World (obviously! 😉)
+- **Brain**: Brain.exe not needed. Got the AI doing the things for you. 😅🤖
+- **Hands**: 1 Hand is recommended. 😅
 
 ---
 
@@ -220,14 +222,12 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## 🔗 Links & Resources
 
 ### 📱 Project Links
-- **🏠 Homepage**: [New World Chat AI](https://github.com/involvex/new-world-chat-ai)
+- **🏠 Homepage**: [New World Chat AI](https://involvex.github.io/new-world-chat-ai/)
 - **📥 Releases**: [Download Latest Version](https://github.com/involvex/new-world-chat-ai/releases)
 - **🐛 Issues**: [Report Bugs & Request Features](https://github.com/involvex/new-world-chat-ai/issues)
-- **💬 Discussions**: [Community Forum](https://github.com/involvex/new-world-chat-ai/discussions)
 
 ### 🔧 Developer Resources
 - **📚 Documentation**: Coming soon!
-- **🎯 Roadmap**: [Project Roadmap](https://github.com/involvex/new-world-chat-ai/projects)
 - **🧪 Test Builds**: [CI/CD Pipeline](https://github.com/involvex/new-world-chat-ai/actions)
 
 ### 🎮 Game Resources

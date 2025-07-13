@@ -3,14 +3,44 @@ import type { ApiResponse } from '../types';
 
 // Cache for API instance to avoid recreation
 let aiInstance: GoogleGenAI | null = null;
+let currentApiKey: string | null = null;
 
-const getAIInstance = (): GoogleGenAI => {
-  if (!aiInstance) {
-    if (!process.env.API_KEY) {
-      throw new Error('API_KEY is not configured. Please set your Gemini API key.');
+// Default API key (yours)
+const DEFAULT_API_KEY = 'AIzaSyDYoJe6nXCpQI_xNpq9xQjK5fBxYUKqR0Y'; // Replace with your actual API key
+
+const getAIInstance = async (customApiKey?: string): Promise<GoogleGenAI> => {
+  let apiKeyToUse = customApiKey;
+
+  // If running in Electron, try to get the stored API key
+  if (!apiKeyToUse && typeof window !== 'undefined' && window.electronAPI) {
+    try {
+      const storedKey = await window.electronAPI.getGeminiApiKey();
+      if (storedKey && storedKey.trim()) {
+        apiKeyToUse = storedKey.trim();
+      }
+    } catch (error) {
+      console.warn('Could not load stored API key:', error);
     }
-    aiInstance = new GoogleGenAI({ apiKey: process.env.API_KEY });
   }
+
+  // Fallback to environment variable
+  if (!apiKeyToUse && process.env.API_KEY) {
+    apiKeyToUse = process.env.API_KEY;
+  }
+
+  // Fallback to default API key
+  if (!apiKeyToUse) {
+    apiKeyToUse = DEFAULT_API_KEY;
+    console.log('Using default API key (shared with rate limits)');
+  }
+
+  // Recreate instance if API key changed
+  if (!aiInstance || currentApiKey !== apiKeyToUse) {
+    console.log('Creating new AI instance with', apiKeyToUse === DEFAULT_API_KEY ? 'default' : 'custom', 'API key');
+    aiInstance = new GoogleGenAI({ apiKey: apiKeyToUse });
+    currentApiKey = apiKeyToUse;
+  }
+
   return aiInstance;
 };
 
@@ -100,7 +130,7 @@ export const generateChatResponses = async (imageUrl: string, isFunnier: boolean
   try {
     console.log('Generating chat responses for image:', imageUrl.substring(0, 50) + '...');
     
-    const ai = getAIInstance();
+    const ai = await getAIInstance();
     const imageData = await convertImageURLToBase64(imageUrl);
 
     const imagePart = {

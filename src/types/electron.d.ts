@@ -11,6 +11,10 @@ interface ElectronAPI {
   saveCustomPrompt: (prompt: CustomPrompt) => Promise<CustomPrompt[]>;
   deleteCustomPrompt: (promptId: string) => Promise<CustomPrompt[]>;
   
+  // API Key management
+  getGeminiApiKey: () => Promise<string>;
+  saveGeminiApiKey: (apiKey: string) => Promise<boolean>;
+  
   // Message history management
   getMessageHistory: () => Promise<MessageHistory>;
   saveMessageSet: (messageSet: SavedMessageSet) => Promise<MessageHistory>;
@@ -24,6 +28,12 @@ interface ElectronAPI {
   
   // Auto-paste to New World
   pasteToNewWorld: (message: string) => Promise<{ success: boolean; error?: string }>;
+
+  // External links
+  openExternal: (url: string) => Promise<void>;
+  
+  // App control
+  quitApp: () => Promise<void>;
   
   // Utility methods
   invoke: (channel: string, data?: any) => Promise<any>;
@@ -52,6 +62,7 @@ interface AppConfig {
   selectedPrompt: string;
   startMinimized: boolean;
   showInTaskbar: boolean;
+  geminiApiKey?: string;
 }
 
 interface SavedMessageSet {

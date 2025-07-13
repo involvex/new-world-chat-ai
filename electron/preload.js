@@ -20,7 +20,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
       'hotkey-generate-funny', 
       'hotkey-new-image',
       'hotkey-screenshot-captured',
-      'hotkey-screenshot-error'
+      'hotkey-screenshot-error',
+      'open-settings-from-tray',
+      'open-about-from-tray'
     ];
     if (validChannels.includes(channel)) {
       // Remove the event as the first parameter
@@ -37,6 +39,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveCustomPrompt: (prompt) => ipcRenderer.invoke('save-custom-prompt', prompt),
   deleteCustomPrompt: (promptId) => ipcRenderer.invoke('delete-custom-prompt', promptId),
   
+  // API Key management
+  getGeminiApiKey: () => ipcRenderer.invoke('get-gemini-api-key'),
+  saveGeminiApiKey: (apiKey) => ipcRenderer.invoke('save-gemini-api-key', apiKey),
+  
   // Message history management
   getMessageHistory: () => ipcRenderer.invoke('get-message-history'),
   saveMessageSet: (messageSet) => ipcRenderer.invoke('save-message-set', messageSet),
@@ -50,6 +56,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   // Auto-paste to New World
   pasteToNewWorld: (message) => ipcRenderer.invoke('paste-to-new-world', message),
+  
+  // External links
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
+  
+  // App control
+  quitApp: () => ipcRenderer.invoke('quit-app'),
   
   // Test robotjs functionality
   testRobotjs: () => ipcRenderer.invoke('test-robotjs'),

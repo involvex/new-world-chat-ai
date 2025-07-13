@@ -4,6 +4,7 @@ import type { ApiResponse, ChatMessage, SavedMessageSet } from './types';
 import SettingsModal from './src/components/SettingsModal';
 import MessageHistoryModal from './src/components/MessageHistoryModal';
 import SaveMessageDialog from './src/components/SaveMessageDialog';
+import AboutModal from './src/components/AboutModal';
 
 // --- Helper UI Components (memoized for performance) ---
 
@@ -11,67 +12,120 @@ const Header = memo<{
   onOpenSettings: () => void; 
   onOpenHistory: () => void; 
   onTakeScreenshot: () => void;
-}>(({ onOpenSettings, onOpenHistory, onTakeScreenshot }) => (
-  <header className="text-center p-3 sm:p-4 lg:p-6 border-b border-gray-700">
-    <div className="flex flex-col sm:flex-row justify-between items-center max-w-6xl mx-auto gap-4 sm:gap-0">
-      <div className="flex-1 text-center sm:text-left">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-cyan-400 tracking-wider">New World Chat AI</h1>
-        <p className="text-gray-400 mt-1 sm:mt-2 text-sm sm:text-base">Upload or paste a game screenshot to generate contextual chat messages.</p>
-        <div className="mt-2 sm:mt-3 text-xs sm:text-sm text-cyan-300 space-y-1">
-          <div className="flex flex-wrap justify-center sm:justify-start items-center gap-1">
-            💡 <kbd className="px-1 py-0.5 text-xs font-mono bg-gray-700 rounded">Ctrl+V</kbd> to paste and auto-generate!
+  onCloseApp?: () => void;
+}>(({ onOpenSettings, onOpenHistory, onTakeScreenshot, onCloseApp }) => (
+  <header className="relative bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-gray-700/50 shadow-lg">
+    {/* Background decoration */}
+    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-purple-500/5 pointer-events-none"></div>
+    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+    
+    <div className="relative z-10 max-w-6xl mx-auto px-4 py-3">
+      <div className="flex flex-col lg:flex-row justify-between items-center gap-4 lg:gap-6">
+        {/* Left side - Title and description */}
+        <div className="flex-1 text-center lg:text-left space-y-2">
+          {/* Main title with enhanced styling */}
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-cyan-400 via-cyan-300 to-blue-400 bg-clip-text text-transparent tracking-wide">
+              New World Chat AI
+            </h1>
+            <div className="h-0.5 w-20 sm:w-24 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-full mx-auto lg:mx-0"></div>
           </div>
-          <div className="text-xs text-gray-500 flex flex-wrap justify-center sm:justify-start items-center gap-1">
-            <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 font-mono bg-gray-700 rounded">Ctrl+Enter</kbd> Generate
-            </span>
-            <span className="hidden sm:inline">•</span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 font-mono bg-gray-700 rounded">Ctrl+Shift+Enter</kbd> Funny
-            </span>
-            <span className="hidden sm:inline">•</span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 font-mono bg-gray-700 rounded">Ctrl+Shift+S</kbd> Screenshot
-            </span>
-            <span className="hidden sm:inline">•</span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 font-mono bg-gray-700 rounded">Esc</kbd> Clear
-            </span>
+          
+          {/* Description */}
+          <p className="text-gray-300 text-sm lg:text-base max-w-2xl leading-relaxed">
+            Upload or paste a game screenshot to generate contextual chat messages with AI-powered humor.
+          </p>
+          
+          {/* Keyboard shortcuts section */}
+          <div className="space-y-2">
+            {/* Main tip */}
+            <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2 text-cyan-300">
+              <span className="text-lg">💡</span>
+              <kbd className="px-1.5 py-0.5 text-xs font-mono bg-gray-700/80 border border-gray-600 rounded shadow-sm">Ctrl+V</kbd>
+              <span className="text-xs sm:text-sm">to paste and auto-generate!</span>
+            </div>
+            
+            {/* Detailed shortcuts */}
+            <div className="flex flex-wrap justify-center lg:justify-start items-center gap-2 text-xs text-gray-400">
+              <div className="flex items-center gap-1 bg-gray-800/50 px-1.5 py-0.5 rounded border border-gray-700/50">
+                <kbd className="px-1 py-0.5 font-mono bg-gray-700 text-gray-200 rounded text-xs">Ctrl+Enter</kbd>
+                <span>Generate</span>
+              </div>
+              <span className="hidden sm:inline text-gray-600">•</span>
+              <div className="flex items-center gap-1 bg-gray-800/50 px-1.5 py-0.5 rounded border border-gray-700/50">
+                <kbd className="px-1 py-0.5 font-mono bg-purple-700 text-purple-100 rounded text-xs">Ctrl+Shift+Enter</kbd>
+                <span>Funny</span>
+              </div>
+              <span className="hidden sm:inline text-gray-600">•</span>
+              <div className="flex items-center gap-1 bg-gray-800/50 px-1.5 py-0.5 rounded border border-gray-700/50">
+                <kbd className="px-1 py-0.5 font-mono bg-blue-700 text-blue-100 rounded text-xs">Ctrl+Shift+S</kbd>
+                <span>Screenshot</span>
+              </div>
+              <span className="hidden sm:inline text-gray-600">•</span>
+              <div className="flex items-center gap-1 bg-gray-800/50 px-1.5 py-0.5 rounded border border-gray-700/50">
+                <kbd className="px-1 py-0.5 font-mono bg-red-700 text-red-100 rounded text-xs">Esc</kbd>
+                <span>Clear</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="flex items-center space-x-1 sm:space-x-2">
-        <button
-          onClick={onOpenHistory}
-          className="p-2 text-gray-400 hover:text-cyan-400 transition-colors touch-manipulation"
-          title="Message History"
-        >
-          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </button>
-        <button
-          onClick={onTakeScreenshot}
-          className="p-2 text-gray-400 hover:text-cyan-400 transition-colors touch-manipulation"
-          title="Take Screenshot (Ctrl+Shift+S)"
-        >
-          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </button>
-        <button
-          onClick={onOpenSettings}
-          className="p-2 text-gray-400 hover:text-cyan-400 transition-colors touch-manipulation"
-          title="Settings"
-        >
-          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </button>
+        
+        {/* Right side - Action buttons */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onOpenHistory}
+            className="group relative p-2 text-gray-400 hover:text-cyan-400 transition-all duration-300 hover:bg-gray-700/50 rounded-lg border border-gray-700/50 hover:border-cyan-500/50 hover:shadow-md hover:shadow-cyan-500/10 touch-manipulation"
+            title="Message History"
+          >
+            <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-green-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
+          </button>
+          
+          <button
+            onClick={onTakeScreenshot}
+            className="group relative p-2 text-gray-400 hover:text-cyan-400 transition-all duration-300 hover:bg-gray-700/50 rounded-lg border border-gray-700/50 hover:border-cyan-500/50 hover:shadow-md hover:shadow-cyan-500/10 touch-manipulation"
+            title="Take Screenshot (Ctrl+Shift+S)"
+          >
+            <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-blue-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
+          </button>
+          
+          <button
+            onClick={onOpenSettings}
+            className="group relative p-2 text-gray-400 hover:text-cyan-400 transition-all duration-300 hover:bg-gray-700/50 rounded-lg border border-gray-700/50 hover:border-cyan-500/50 hover:shadow-md hover:shadow-cyan-500/10 touch-manipulation"
+            title="Settings"
+          >
+            <svg className="w-5 h-5 transition-transform group-hover:scale-110 group-hover:rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-purple-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
+          </button>
+          
+          {/* Close button - only show in Electron app */}
+          {window.electronAPI && onCloseApp && (
+            <button
+              onClick={onCloseApp}
+              className="group relative p-2 text-gray-400 hover:text-red-400 transition-all duration-300 hover:bg-gray-700/50 rounded-lg border border-gray-700/50 hover:border-red-500/50 hover:shadow-md hover:shadow-red-500/10 touch-manipulation"
+              title="Close Application"
+            >
+              <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
+            </button>
+          )}
+        </div>
       </div>
     </div>
+    
+    {/* Bottom gradient line */}
+    <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"></div>
   </header>
 ));
 Header.displayName = 'Header';
@@ -267,6 +321,7 @@ function App() {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [showMessageHistory, setShowMessageHistory] = useState<boolean>(false);
+  const [showAbout, setShowAbout] = useState<boolean>(false);
   const [showSaveDialog, setShowSaveDialog] = useState<boolean>(false);
   // App config state managed in SettingsModal
   const [currentMessageSet, setCurrentMessageSet] = useState<SavedMessageSet | null>(null);
@@ -287,11 +342,18 @@ function App() {
   // Load app configuration on mount
   useEffect(() => {
     if (window.electronAPI) {
-      // Load custom prompts
-      window.electronAPI.getCustomPrompts().then((prompts) => {
+      // Load custom prompts and configuration
+      Promise.all([
+        window.electronAPI.getCustomPrompts(),
+        window.electronAPI.getConfig()
+      ]).then(([prompts, config]) => {
         setCustomPrompts(prompts);
+        // Set the last selected prompt
+        if (config.selectedPrompt) {
+          setSelectedCustomPrompt(config.selectedPrompt);
+        }
       }).catch((error) => {
-        console.error('Failed to load custom prompts:', error);
+        console.error('Failed to load app configuration:', error);
       });
     }
   }, []);
@@ -315,6 +377,16 @@ function App() {
         if (screenshotUrl) {
           resetSelection();
         }
+      });
+
+      // Listen for tray settings event
+      window.electronAPI.receive('open-settings-from-tray', () => {
+        setShowSettings(true);
+      });
+
+      // Listen for tray about event
+      window.electronAPI.receive('open-about-from-tray', () => {
+        setShowAbout(true);
       });
     }
   }, [screenshotUrl, isLoading]);
@@ -634,6 +706,16 @@ function App() {
     }
   }, [processImageFile]);
 
+  const handleCloseApp = useCallback(async () => {
+    if (window.electronAPI) {
+      try {
+        await window.electronAPI.quitApp();
+      } catch (error) {
+        console.error('Failed to close app:', error);
+      }
+    }
+  }, []);
+
   // Keyboard shortcuts effect
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -732,6 +814,7 @@ function App() {
           onOpenSettings={() => setShowSettings(true)}
           onOpenHistory={() => setShowMessageHistory(true)}
           onTakeScreenshot={handleTakeScreenshot}
+          onCloseApp={handleCloseApp}
         />
         <main className="flex-grow container mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8 flex flex-col items-center">
           <div className="w-full max-w-6xl bg-gray-800/50 rounded-xl shadow-2xl p-3 sm:p-4 lg:p-6 border border-gray-700 hover-scale">
@@ -948,15 +1031,32 @@ function App() {
           </div>
         </main>
         <footer className="text-center text-gray-500 p-3 sm:p-4 text-xs sm:text-sm border-t border-gray-700/30">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-            <p className="flex items-center gap-1">
-              Created with ❤️ by 
+          <div className="flex flex-col items-center justify-center space-y-2">
+            {/* First line - Logo and Created by */}
+            <div className="flex items-center gap-2">
+              <img src="./build/icon.png" alt="New World Chat AI Logo" className="h-6 w-6 sm:h-8 sm:w-8" />
+              <span>Created with ❤️ by</span>
               <span className="text-cyan-400 font-semibold">Ina Venox</span>
-              <span className="text-gray-600">|</span>
-              <span className="text-yellow-400">Optimized for performance ⚡</span>
-            </p>
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <span>"Why walk to Everfall when you can teleport... if you have azoth!" 🧭💨</span>
+            </div>
+            
+            {/* Second line - Links */}
+            <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-3 text-xs">
+              <a href="https://involvex.github.io/new-world-chat-ai" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-cyan-400 transition-colors">
+                🌐 Homepage
+              </a>
+              <span className="text-gray-600 hidden sm:inline">•</span>
+              <a href="https://coff.ee/involvex" target="_blank" rel="noopener noreferrer" className="text-yellow-400 hover:text-yellow-300 transition-colors">
+                ☕ Buy me a coffee
+              </a>
+              <span className="text-gray-600 hidden sm:inline">•</span>
+              <a href="https://github.com/involvex/new-world-chat-ai" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-cyan-400 transition-colors">
+                📦 GitHub
+              </a>
+            </div>
+            
+            {/* Third line - New World joke */}
+            <div className="text-xs text-gray-600 italic">
+              "Why walk to Everfall when you can teleport... if you have azoth!" 🧭💨
             </div>
           </div>
         </footer>
@@ -966,6 +1066,11 @@ function App() {
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         onConfigUpdate={() => {}}
+      />
+      
+      <AboutModal
+        isOpen={showAbout}
+        onClose={() => setShowAbout(false)}
       />
       
       <MessageHistoryModal

@@ -49,7 +49,8 @@ const defaultConfig = {
   ],
   selectedPrompt: 'default',
   startMinimized: false,
-  showInTaskbar: true
+  showInTaskbar: true,
+  geminiApiKey: '' // Optional API key, falls back to default if empty
 };
 
 // Load or create configuration
@@ -332,22 +333,39 @@ function createTray() {
         }
       }
     },
+    {
+      label: 'Open Settings',
+      click: () => {
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+          // Send event to open settings modal
+          mainWindow.webContents.send('open-settings-from-tray');
+        } else {
+          createWindow();
+          // Wait for window to load then open settings
+          mainWindow.webContents.once('did-finish-load', () => {
+            mainWindow.webContents.send('open-settings-from-tray');
+          });
+        }
+      }
+    },
     { type: 'separator' },
     {
       label: 'About',
       click: () => {
-        dialog.showMessageBox(mainWindow, {
-          type: 'info',
-          title: 'About New World Chat AI',
-          message: 'New World Chat AI',
-          detail: 'Version 1.2.0\nCreated by Ina Venox\n\nGenerate hilarious chat messages for New World using AI.\n\n🎮 Features:\n• AI-powered screenshot analysis\n• Auto-paste to game with 🎮 buttons\n• Fully responsive design\n• Customizable hotkeys & prompts\n• System tray integration\n• Message history & export\n\n💡 New World Tip:\n"Remember: The real treasure was the azoth we spent along the way!" 💰\n\nGitHub: https://github.com/involvex/new-world-chat-ai',
-          buttons: ['OK', 'Visit GitHub'],
-          defaultId: 0
-        }).then((result) => {
-          if (result.response === 1) {
-            shell.openExternal('https://github.com/involvex/new-world-chat-ai');
-          }
-        });
+        if (mainWindow) {
+          mainWindow.show();
+          mainWindow.focus();
+          // Send event to open about modal
+          mainWindow.webContents.send('open-about-from-tray');
+        } else {
+          createWindow();
+          // Wait for window to load then open about
+          mainWindow.webContents.once('did-finish-load', () => {
+            mainWindow.webContents.send('open-about-from-tray');
+          });
+        }
       }
     },
     { type: 'separator' },
@@ -492,6 +510,33 @@ ipcMain.handle('delete-custom-prompt', (event, promptId) => {
   config.customPrompts = config.customPrompts.filter(p => p.id !== promptId || p.isDefault);
   saveConfig(config);
   return config.customPrompts;
+});
+
+// API Key handlers
+ipcMain.handle('get-gemini-api-key', () => {
+  return config.geminiApiKey || '';
+});
+
+ipcMain.handle('save-gemini-api-key', (event, apiKey) => {
+  config.geminiApiKey = apiKey;
+  saveConfig(config);
+  return true;
+});
+
+// External links
+ipcMain.handle('open-external', async (event, url) => {
+  try {
+    await shell.openExternal(url);
+  } catch (error) {
+    console.error('Failed to open external URL:', error);
+    throw error;
+  }
+});
+
+// App control
+ipcMain.handle('quit-app', () => {
+  app.isQuiting = true;
+  app.quit();
 });
 
 ipcMain.handle('take-screenshot', async () => {
