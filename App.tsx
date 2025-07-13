@@ -621,6 +621,29 @@ function App() {
     }
   }, [processImageFile]);
 
+  const handlePasteToNewWorld = useCallback(async (message: string) => {
+    if (!window.electronAPI) {
+      setError("Auto-paste feature only available in desktop version");
+      return;
+    }
+
+    try {
+      setNotification("🎮 Pasting to New World...");
+      const result = await window.electronAPI.pasteToNewWorld(message);
+      
+      if (result.success) {
+        setNotification("✅ Message sent to New World chat!");
+        setTimeout(() => setNotification(null), 3000);
+      } else {
+        setError(`Auto-paste failed: ${result.error}`);
+        setNotification(null);
+      }
+    } catch (error) {
+      setError('Failed to paste to New World: ' + (error instanceof Error ? error.message : String(error)));
+      setNotification(null);
+    }
+  }, []);
+
   // Keyboard shortcuts effect
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

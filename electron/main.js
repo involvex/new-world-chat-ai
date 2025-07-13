@@ -2,6 +2,8 @@ import { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, shell,
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import fs from 'fs';
+import { exec } from 'child_process';
+import robot from 'robotjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -501,9 +503,6 @@ ipcMain.handle('take-screenshot', async () => {
 // Auto-paste to New World
 ipcMain.handle('paste-to-new-world', async (event, message) => {
   try {
-    const { exec } = require('child_process');
-    const robot = require('robotjs');
-    
     // Store current clipboard content
     const originalClipboard = clipboard.readText();
     
