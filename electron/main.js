@@ -1,4 +1,5 @@
-import { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, shell, clipboard, desktopCapturer, screen } from 'electron';
+import electron from 'electron';
+const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, shell, clipboard, desktopCapturer, screen } = electron;
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import fs from 'fs';
@@ -143,8 +144,10 @@ async function captureScreenshot() {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1400,
+    height: 900,
+    minWidth: 400,
+    minHeight: 500,
     show: !config.startMinimized,
     skipTaskbar: !config.showInTaskbar,
     webPreferences: {
@@ -154,6 +157,8 @@ function createWindow() {
       webSecurity: true, // Keep security enabled but allow local resources
       allowRunningInsecureContent: false,
     },
+    titleBarStyle: 'default',
+    autoHideMenuBar: true,
   });
 
   if (isDev) {
@@ -312,8 +317,8 @@ function createSettingsWindow() {
 }
 
 function createTray() {
-  // Create tray icon (using a simple emoji for now, you can replace with a proper icon file)
-  tray = new Tray(join(__dirname, '../build/icon.png')); // You'll need to add this icon
+  // Create tray icon
+  tray = new Tray(join(__dirname, '../build/icon.png'));
   
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -327,12 +332,6 @@ function createTray() {
         }
       }
     },
-    {
-      label: 'Settings',
-      click: () => {
-        createSettingsWindow();
-      }
-    },
     { type: 'separator' },
     {
       label: 'About',
@@ -341,8 +340,13 @@ function createTray() {
           type: 'info',
           title: 'About New World Chat AI',
           message: 'New World Chat AI',
-          detail: 'Version 0.0.1\nCreated by Ina Venox\n\nGenerate hilarious chat messages for New World using AI.\n\nFeatures:\n• Auto-generation on paste\n• Customizable hotkeys\n• Custom prompts\n• System tray integration',
-          buttons: ['OK']
+          detail: 'Version 1.2.0\nCreated by Ina Venox\n\nGenerate hilarious chat messages for New World using AI.\n\n🎮 Features:\n• AI-powered screenshot analysis\n• Auto-paste to game with 🎮 buttons\n• Fully responsive design\n• Customizable hotkeys & prompts\n• System tray integration\n• Message history & export\n\n💡 New World Tip:\n"Remember: The real treasure was the azoth we spent along the way!" 💰\n\nGitHub: https://github.com/involvex/new-world-chat-ai',
+          buttons: ['OK', 'Visit GitHub'],
+          defaultId: 0
+        }).then((result) => {
+          if (result.response === 1) {
+            shell.openExternal('https://github.com/involvex/new-world-chat-ai');
+          }
         });
       }
     },
@@ -502,50 +506,80 @@ ipcMain.handle('take-screenshot', async () => {
 
 // Auto-paste to New World
 ipcMain.handle('paste-to-new-world', async (event, message) => {
+  console.log('Auto-paste requested for message:', message.substring(0, 50) + '...');
+  
   try {
     // Store current clipboard content
     const originalClipboard = clipboard.readText();
+    console.log('Original clipboard saved');
     
     // Set message to clipboard
     clipboard.writeText(message);
+    console.log('Message set to clipboard');
     
     // Try to find and focus New World window
-    const windows = await new Promise((resolve, reject) => {
+    console.log('Checking if New World is running...');
+    const isRunning = await new Promise((resolve, reject) => {
       exec('tasklist /FI "IMAGENAME eq NewWorld.exe" /FO CSV', (error, stdout) => {
         if (error) {
+          console.error('Error checking New World process:', error);
           reject(error);
           return;
         }
         const lines = stdout.split('\n');
-        const isRunning = lines.some(line => line.includes('NewWorld.exe'));
-        resolve(isRunning);
+        const found = lines.some(line => line.includes('NewWorld.exe'));
+        console.log('New World running:', found);
+        resolve(found);
       });
     });
     
-    if (!windows) {
+    if (!isRunning) {
       throw new Error('New World is not running');
     }
     
+    console.log('Attempting to focus New World window...');
     // Find New World window and activate it
-    exec('powershell -Command "Add-Type -AssemblyName Microsoft.VisualBasic; [Microsoft.VisualBasic.Interaction]::AppActivate(\\"New World\\")"', (error) => {
-      if (error) {
-        console.warn('Could not focus New World window:', error);
-      }
+    await new Promise((resolve) => {
+      exec('powershell -Command "Add-Type -AssemblyName Microsoft.VisualBasic; [Microsoft.VisualBasic.Interaction]::AppActivate(\\"New World\\")"', (error) => {
+        if (error) {
+          console.warn('Could not focus New World window:', error);
+        } else {
+          console.log('New World window focused successfully');
+        }
+        resolve();
+      });
     });
     
     // Small delay to ensure window is focused
-    setTimeout(() => {
-      // Press Enter to open chat, paste message, press Enter to send
-      robot.keyTap('enter'); // Open chat
+    console.log('Starting automation sequence...');
+    await new Promise((resolve) => {
       setTimeout(() => {
-        robot.keyTap('v', 'ctrl'); // Paste
-        setTimeout(() => {
-          robot.keyTap('enter'); // Send message
-          // Restore original clipboard
+        try {
+          console.log('Step 1: Opening chat with Enter key...');
+          robot.keyTap('enter'); // Open chat
+          
+          setTimeout(() => {
+            console.log('Step 2: Pasting with Ctrl+V...');
+            robot.keyTap('v', ['control']); // Paste (use array for modifiers)
+            
+            setTimeout(() => {
+              console.log('Step 3: Sending message with Enter key...');
+              robot.keyTap('enter'); // Send message
+              
+              // Restore original clipboard
+              clipboard.writeText(originalClipboard);
+              console.log('Clipboard restored, automation complete');
+              resolve();
+            }, 150);
+          }, 300);
+        } catch (robotError) {
+          console.error('Robot automation error:', robotError);
+          // Restore clipboard even if robot fails
           clipboard.writeText(originalClipboard);
-        }, 100);
-      }, 200);
-    }, 500);
+          resolve();
+        }
+      }, 800);
+    });
     
     return { success: true };
   } catch (error) {
@@ -701,6 +735,38 @@ ipcMain.handle('backup-message-history', async () => {
   } catch (error) {
     console.error('Error backing up message history:', error);
     return { success: false, error: error.message };
+  }
+});
+
+// Test robotjs functionality
+ipcMain.handle('test-robotjs', async () => {
+  try {
+    console.log('Testing robotjs functionality...');
+    
+    // Get mouse position as a basic test
+    const mousePos = robot.getMousePos();
+    console.log('Mouse position:', mousePos);
+    
+    // Get screen size
+    const screenSize = robot.getScreenSize();
+    console.log('Screen size:', screenSize);
+    
+    // Test a simple key tap (space - should be safe)
+    console.log('Testing key tap (space)...');
+    robot.keyTap('space');
+    
+    return { 
+      success: true, 
+      mousePos, 
+      screenSize,
+      message: 'robotjs is working correctly'
+    };
+  } catch (error) {
+    console.error('robotjs test failed:', error);
+    return { 
+      success: false, 
+      error: error.message 
+    };
   }
 });
 

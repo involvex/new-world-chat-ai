@@ -50,6 +50,49 @@
   transform: scale(1.02);
 }
 
+/* Mobile-friendly hover effects */
+@media (hover: hover) {
+  .hover-scale:hover {
+    transform: scale(1.02);
+  }
+}
+
+@media (hover: none) {
+  .hover-scale:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Responsive text utilities */
+.text-responsive {
+  font-size: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .text-responsive {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-responsive {
+    font-size: 1.125rem;
+  }
+}
+
+/* Touch-friendly interactive elements */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Improved button focus for accessibility */
+button:focus-visible {
+  outline: 2px solid #06b6d4;
+  outline-offset: 2px;
+}
+
 /* Gradient backgrounds */
 .gradient-bg {
   background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
@@ -80,4 +123,21 @@
   animation: shimmer 2s infinite linear;
   background: linear-gradient(to right, #374151 8%, #4b5563 18%, #374151 33%);
   background-size: 800px 104px;
+}
+
+/* Responsive break-word utility */
+.overflow-wrap-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Safe area for mobile devices */
+@supports (env(safe-area-inset-top)) {
+  .safe-area-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
 }

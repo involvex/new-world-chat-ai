@@ -113,16 +113,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
   if (!isOpen || !config) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-        <div className="flex h-full">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
+        <div className="flex flex-col lg:flex-row h-full">
           {/* Sidebar */}
-          <div className="w-64 bg-gray-900 p-6">
-            <h2 className="text-xl font-bold text-cyan-400 mb-6">⚙️ Settings</h2>
-            <nav className="space-y-2">
+          <div className="w-full lg:w-64 bg-gray-900 p-3 sm:p-6 border-b lg:border-b-0 lg:border-r border-gray-700">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-bold text-cyan-400">⚙️ Settings</h2>
+              <button
+                onClick={onClose}
+                className="lg:hidden text-gray-400 hover:text-white transition-colors"
+                title="Close settings"
+              >
+                <i className="fas fa-times text-lg"></i>
+              </button>
+            </div>
+            <nav className="flex lg:flex-col lg:space-y-2 space-x-2 lg:space-x-0 overflow-x-auto lg:overflow-x-visible">
               <button
                 onClick={() => setActiveTab('hotkeys')}
-                className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
+                className={`flex-shrink-0 lg:w-full text-left px-3 lg:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
                   activeTab === 'hotkeys' ? 'bg-cyan-600 text-white' : 'text-gray-300 hover:bg-gray-700'
                 }`}
               >
@@ -130,15 +139,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
               </button>
               <button
                 onClick={() => setActiveTab('prompts')}
-                className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
+                className={`flex-shrink-0 lg:w-full text-left px-3 lg:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
                   activeTab === 'prompts' ? 'bg-cyan-600 text-white' : 'text-gray-300 hover:bg-gray-700'
                 }`}
               >
-                💬 Custom Prompts
+                💬 Prompts
               </button>
               <button
                 onClick={() => setActiveTab('general')}
-                className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
+                className={`flex-shrink-0 lg:w-full text-left px-3 lg:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
                   activeTab === 'general' ? 'bg-cyan-600 text-white' : 'text-gray-300 hover:bg-gray-700'
                 }`}
               >
@@ -148,81 +157,108 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 p-6 overflow-y-auto">
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="hidden lg:flex justify-end p-3 sm:p-4 border-b border-gray-700">
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-white transition-colors"
+                title="Close settings"
+              >
+                <i className="fas fa-times text-xl"></i>
+              </button>
+            </div>
+            
+            <div className="flex-1 p-3 sm:p-6 overflow-y-auto">
             {activeTab === 'hotkeys' && (
               <div>
-                <h3 className="text-2xl font-bold text-gray-200 mb-6">Hotkey Configuration</h3>
-                <p className="text-gray-400 mb-6">Configure global keyboard shortcuts. Changes take effect immediately.</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-200 mb-3 sm:mb-6">🔥 Hotkey Configuration</h3>
+                <p className="text-gray-400 text-sm sm:text-base mb-4 sm:mb-6">Configure global keyboard shortcuts. Changes take effect immediately.</p>
                 
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Show/Hide App
-                    </label>
-                    <input
-                      type="text"
-                      value={config.hotkeys.showHide}
-                      onChange={(e) => handleHotkeyChange('showHide', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      placeholder="CommandOrControl+Shift+N"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Toggle app visibility from anywhere</p>
-                  </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Show/Hide App
+                      </label>
+                      <input
+                        type="text"
+                        value={config.hotkeys.showHide}
+                        onChange={(e) => handleHotkeyChange('showHide', e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
+                        placeholder="CommandOrControl+Shift+N"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Toggle app visibility from anywhere</p>
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Generate Messages
-                    </label>
-                    <input
-                      type="text"
-                      value={config.hotkeys.generate}
-                      onChange={(e) => handleHotkeyChange('generate', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      placeholder="CommandOrControl+Enter"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Generate chat messages when app is focused</p>
-                  </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Generate Messages
+                      </label>
+                      <input
+                        type="text"
+                        value={config.hotkeys.generate}
+                        onChange={(e) => handleHotkeyChange('generate', e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
+                        placeholder="CommandOrControl+Enter"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Generate chat messages when app is focused</p>
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Generate Funny Messages
-                    </label>
-                    <input
-                      type="text"
-                      value={config.hotkeys.generateFunny}
-                      onChange={(e) => handleHotkeyChange('generateFunny', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      placeholder="CommandOrControl+Shift+Enter"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Generate extra funny messages</p>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Generate Funny Messages
+                      </label>
+                      <input
+                        type="text"
+                        value={config.hotkeys.generateFunny}
+                        onChange={(e) => handleHotkeyChange('generateFunny', e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
+                        placeholder="CommandOrControl+Shift+Enter"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Generate extra funny messages</p>
+                    </div>
                   </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        New Image
+                      </label>
+                      <input
+                        type="text"
+                        value={config.hotkeys.newImage}
+                        onChange={(e) => handleHotkeyChange('newImage', e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
+                        placeholder="CommandOrControl+N"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Clear current image and start over</p>
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      New Image
-                    </label>
-                    <input
-                      type="text"
-                      value={config.hotkeys.newImage}
-                      onChange={(e) => handleHotkeyChange('newImage', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      placeholder="CommandOrControl+N"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Clear current image and start over</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      📸 Take Screenshot & Generate
-                    </label>
-                    <input
-                      type="text"
-                      value={config.hotkeys.screenshot}
-                      onChange={(e) => handleHotkeyChange('screenshot', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      placeholder="CommandOrControl+Shift+S"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Capture screen and automatically generate messages</p>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        📸 Take Screenshot & Generate
+                      </label>
+                      <input
+                        type="text"
+                        value={config.hotkeys.screenshot}
+                        onChange={(e) => handleHotkeyChange('screenshot', e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
+                        placeholder="CommandOrControl+Shift+S"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Capture screen and automatically generate messages</p>
+                    </div>
+                    
+                    {/* New World Tip */}
+                    <div className="bg-blue-900/20 border border-blue-700/30 rounded-lg p-3 sm:p-4 mt-4">
+                      <div className="flex items-center mb-2">
+                        <i className="fas fa-lightbulb text-yellow-400 mr-2"></i>
+                        <span className="text-blue-300 font-medium text-sm">New World Pro Tip</span>
+                      </div>
+                      <p className="text-blue-200 text-xs sm:text-sm">
+                        "Set your screenshot hotkey to something quick - you never know when you'll need to capture that perfect 'got ganked at windsward' moment!" 📸⚔️
+                      </p>
+                      <p className="text-xs text-blue-400 mt-1">- Ina Venox</p>
+                    </div>
                   </div>
                 </div>
 
@@ -375,19 +411,20 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
             )}
 
             {/* Footer */}
-            <div className="flex justify-end space-x-4 pt-6 mt-6 border-t border-gray-700">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 pt-4 sm:pt-6 mt-4 sm:mt-6 border-t border-gray-700">
               <button
                 onClick={onClose}
-                className="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors text-sm sm:text-base"
               >
                 Cancel
               </button>
               <button
                 onClick={saveConfig}
-                className="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg transition-colors"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg transition-colors text-sm sm:text-base"
               >
                 Save Settings
               </button>
+            </div>
             </div>
           </div>
         </div>

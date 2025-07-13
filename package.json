@@ -1,11 +1,13 @@
 {
   "name": "new-world-chat-ai",
-  "description": "Generate multiple in-game chat responses for the MMORPG 'New World' based on a screenshot. The generated messages contain no special characters, making them perfect for quick copy-pasting into chat.",
+  "description": "Generate Chatmessage for New World with Ai and Humor.",
   "private": false,
-  "version": "1.1.2",
+  "version": "1.2.0",
   "type": "module",
+  "homepage": "https://involvex.github.io/new-world-chat-ai/",
   "author": {
-    "name": "Involvex"
+    "name": "Ina Venox",
+    "url": "https://involvex.github.io/new-world-chat-ai/"
   },
   "license": "MIT",
   "github": {
@@ -35,23 +37,25 @@
   },
   "dependencies": {
     "@google/genai": "^1.9.0",
+    "@types/node": "^24.0.13",
+    "@types/react": "^19.1.8",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "robotjs": "^0.6.0"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react": "^4.2.0",
+    "@electron/rebuild": "^4.0.1",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.6.0",
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
-    "electron": "^29.3.0",
+    "electron": "^29.4.6",
     "electron-builder": "^26.0.18",
-    "rimraf": "^5.0.0",
-    "typescript": "~5.7.2",
-    "vite": "^6.2.0",
-    "wait-on": "^8.0.0"
+    "electron-rebuild": "^3.2.9",
+    "rimraf": "^5.0.10",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "wait-on": "^8.0.3"
   },
   "build": {
     "appId": "com.involvex.new-world-chat-ai",

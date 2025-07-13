@@ -1,42 +1,414 @@
 
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>New World Chat AI</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New World Chat AI - Documentation</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-      /* For a subtle scrollbar that matches the dark theme */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #1f2937; /* bg-gray-800 */
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #4b5563; /* bg-gray-600 */
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #6b7280; /* bg-gray-500 */
-      }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 75%, #475569 100%);
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 25%, #8b5cf6 75%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .glow {
+            filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.3));
+        }
+        
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        
+        /* Animation for floating elements */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Responsive breakpoints enhancement */
+        @media (max-width: 640px) {
+            .hero-text {
+                font-size: 2.5rem;
+                line-height: 1.1;
+            }
+        }
     </style>
-
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.1.0/",
-    "react": "https://esm.sh/react@^19.1.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.9.0"
-  }
-}
-</script>
-  <script type="module" crossorigin src="/new-world-chat-ai/assets/index-DUhUSDmM.js"></script>
-  <link rel="stylesheet" crossorigin href="/new-world-chat-ai/assets/index-D0xiqmXl.css">
 </head>
-  <body class="bg-gray-900 text-gray-200 font-sans antialiased">
-    <div id="root"></div>
-  </body>
+<body class="gradient-bg text-white min-h-screen">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-slate-900/80 backdrop-blur-md border-b border-slate-700/50 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 sm:h-20">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center glow">
+                        <i class="fas fa-gamepad text-white text-sm sm:text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg sm:text-xl font-bold text-white">New World Chat AI</h1>
+                        <p class="text-xs text-slate-400 hidden sm:block">by Ina Venox</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 sm:space-x-4">
+                    <a href="#download" class="bg-cyan-500 hover:bg-cyan-400 text-white px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm font-medium">
+                        <i class="fas fa-download mr-1 sm:mr-2"></i>Download
+                    </a>
+                    <a href="https://github.com/involvex/new-world-chat-ai" target="_blank" rel="noopener noreferrer" class="text-slate-300 hover:text-white transition-colors" title="View on GitHub">
+                        <i class="fab fa-github text-xl sm:text-2xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-20 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6 lg:px-8">
+        <div class="container mx-auto text-center">
+            <div class="mb-6 sm:mb-8">
+                <div class="inline-block p-3 sm:p-4 bg-slate-800/50 rounded-2xl glow float">
+                    <i class="fas fa-robot text-4xl sm:text-6xl text-cyan-400"></i>
+                </div>
+            </div>
+            
+            <h1 class="hero-text text-4xl sm:text-6xl lg:text-7xl font-black mb-4 sm:mb-6 hero-gradient text-shadow">
+                New World Chat AI
+            </h1>
+            
+            <p class="text-lg sm:text-xl lg:text-2xl text-slate-300 mb-6 sm:mb-8 max-w-4xl mx-auto leading-relaxed">
+                Generate hilarious, AI-powered chat messages for New World! 
+                <span class="text-cyan-400 font-semibold">Screenshots → Comedy Gold</span> ⚡
+            </p>
+            
+            <!-- New World Joke -->
+            <div class="bg-slate-800/30 border border-slate-700/50 rounded-xl p-4 sm:p-6 mb-8 sm:mb-12 max-w-2xl mx-auto">
+                <div class="flex items-center justify-center mb-3">
+                    <i class="fas fa-laugh text-yellow-400 text-xl sm:text-2xl mr-2"></i>
+                    <span class="text-yellow-400 font-semibold text-sm sm:text-base">New World Wisdom</span>
+                </div>
+                <p class="text-slate-300 italic text-sm sm:text-base leading-relaxed">
+                    "Why did the settler bring a calculator to Aeternum? 
+                    <br class="hidden sm:block">
+                    Because they heard the economy was <span class="text-cyan-400 font-semibold">mathematically impossible!</span> 📊💰"
+                </p>
+                <p class="text-xs text-slate-500 mt-2">- Every New World economist, probably</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+                <a href="#download" class="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg transition-all transform hover:scale-105 shadow-xl">
+                    <i class="fas fa-download mr-2"></i>Download Now
+                </a>
+                <a href="#features" class="w-full sm:w-auto border border-slate-600 hover:border-slate-500 text-slate-300 hover:text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-medium text-base sm:text-lg transition-all">
+                    <i class="fas fa-info-circle mr-2"></i>Learn More
+                </a>
+            </div>
+            
+            <!-- Author Credit -->
+            <div class="mt-8 sm:mt-12 text-center">
+                <p class="text-slate-400 text-sm sm:text-base">
+                    Created with ❤️ by <span class="text-cyan-400 font-semibold">Ina Venox</span>
+                </p>
+                <p class="text-slate-500 text-xs sm:text-sm mt-1">
+                    For the chaotic New World community 🎮
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-slate-900/30">
+        <div class="container mx-auto">
+            <div class="text-center mb-12 sm:mb-16">
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
+                    <span class="hero-gradient">Why Choose Our AI?</span>
+                </h2>
+                <p class="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto">
+                    Transform your New World experience with AI-powered humor that actually understands the game!
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                <!-- Feature Cards -->
+                <div class="card-hover bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 sm:p-8">
+                    <div class="text-center">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                            <i class="fas fa-camera text-white text-lg sm:text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">Screenshot Magic</h3>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                            Upload any New World screenshot and watch our AI analyze the situation to generate perfectly contextual chat messages.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card-hover bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 sm:p-8">
+                    <div class="text-center">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                            <i class="fas fa-gamepad text-white text-lg sm:text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">Auto-Paste to Game</h3>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                            One-click paste directly into New World chat. No more alt-tabbing or copy-pasting manually!
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card-hover bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 sm:p-8">
+                    <div class="text-center">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                            <i class="fas fa-laugh text-white text-lg sm:text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">Multiple Humor Styles</h3>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                            From witty observations to absolutely unhinged goblin energy - customize your comedy level!
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card-hover bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 sm:p-8">
+                    <div class="text-center">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                            <i class="fas fa-keyboard text-white text-lg sm:text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">Global Hotkeys</h3>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                            Control everything without leaving the game. Screenshots, generation, and pasting with keyboard shortcuts.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card-hover bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 sm:p-8">
+                    <div class="text-center">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-red-400 to-rose-500 rounded-xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                            <i class="fas fa-save text-white text-lg sm:text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">Message History</h3>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                            Save your favorite message sets and build your personal library of New World humor.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card-hover bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 sm:p-8">
+                    <div class="text-center">
+                        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                            <i class="fas fa-cogs text-white text-lg sm:text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4 text-white">Custom Prompts</h3>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                            Create your own AI personalities and humor styles to match your unique playstyle.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
+        <div class="container mx-auto">
+            <div class="text-center mb-12 sm:mb-16">
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
+                    <span class="hero-gradient">How It Works</span>
+                </h2>
+                <p class="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto">
+                    Get started in minutes with these simple steps
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
+                <div class="text-center">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 text-white font-bold text-xl sm:text-2xl">
+                        1
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Take a Screenshot</h3>
+                    <p class="text-slate-300 text-sm sm:text-base">
+                        Capture any moment in New World - combat, crafting, or just standing around Everfall.
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 text-white font-bold text-xl sm:text-2xl">
+                        2
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4">AI Analyzes</h3>
+                    <p class="text-slate-300 text-sm sm:text-base">
+                        Our AI understands the context and generates 5 unique, hilarious chat messages.
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 text-white font-bold text-xl sm:text-2xl">
+                        3
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Share the Laughs</h3>
+                    <p class="text-slate-300 text-sm sm:text-base">
+                        One-click paste into chat and watch your company crack up!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="download" class="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-slate-900/30">
+        <div class="container mx-auto text-center">
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
+                <span class="hero-gradient">Ready to Join the Fun?</span>
+            </h2>
+            <p class="text-lg sm:text-xl text-slate-300 mb-8 sm:mb-12 max-w-3xl mx-auto">
+                Download New World Chat AI and become the funniest player in Aeternum!
+            </p>
+
+            <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 sm:p-8 max-w-2xl mx-auto mb-8 sm:mb-12">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
+                    <div class="text-left">
+                        <h3 class="text-lg sm:text-xl font-bold text-white mb-1 sm:mb-2">New World Chat AI v1.1.2</h3>
+                        <p class="text-slate-400 text-sm sm:text-base">Windows 10/11 • 200MB • Free</p>
+                        <p class="text-xs text-slate-500 mt-1">by Ina Venox</p>
+                    </div>
+                    <a href="https://github.com/involvex/new-world-chat-ai/releases" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-bold transition-all transform hover:scale-105">
+                        <i class="fas fa-download mr-2"></i>Download Now
+                    </a>
+                </div>
+            </div>
+
+            <div class="text-sm text-slate-400 space-y-1">
+                <p>🔒 Safe & Secure • 🚀 Fast Performance • 🎮 Game-Optimized</p>
+                <p>Created by <span class="text-cyan-400">Ina Venox</span> for the New World community</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-700/50 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+        <div class="container mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-gamepad text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold">New World Chat AI</span>
+                    </div>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        The ultimate AI companion for New World players. Generate hilarious chat messages and become the life of your company!
+                    </p>
+                    <p class="text-xs text-slate-500 mt-3">
+                        Created with ❤️ by <span class="text-cyan-400">Ina Venox</span>
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#features" class="text-slate-400 hover:text-cyan-400 transition-colors">Features</a></li>
+                        <li><a href="#download" class="text-slate-400 hover:text-cyan-400 transition-colors">Download</a></li>
+                        <li><a href="https://github.com/involvex/new-world-chat-ai" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-cyan-400 transition-colors">GitHub</a></li>
+                        <li><a href="https://github.com/involvex/new-world-chat-ai/issues" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-cyan-400 transition-colors">Support</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Connect</h4>
+                    <div class="flex space-x-3">
+                        <a href="https://github.com/involvex" target="_blank" rel="noopener noreferrer" title="Ina Venox on GitHub" class="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="https://github.com/involvex/new-world-chat-ai" target="_blank" rel="noopener noreferrer" title="View Source Code" class="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+                            <i class="fas fa-code"></i>
+                        </a>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-4">
+                        Made for the chaotic and wonderful New World community 🎮
+                    </p>
+                </div>
+            </div>
+            
+            <div class="border-t border-slate-700/50 mt-8 pt-8 text-center">
+                <p class="text-slate-400 text-sm">
+                    © 2025 New World Chat AI by <span class="text-cyan-400 font-medium">Ina Venox</span>. 
+                    Made with ❤️ for New World players.
+                </p>
+                <p class="text-xs text-slate-500 mt-2">
+                    "May your azoth be plentiful and your chat messages legendary!" 
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Smooth scroll script -->
+    <script>
+        // Add smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add scroll effect to navigation
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 100) {
+                nav.classList.add('bg-slate-900/95');
+                nav.classList.remove('bg-slate-900/80');
+            } else {
+                nav.classList.add('bg-slate-900/80');
+                nav.classList.remove('bg-slate-900/95');
+            }
+        });
+    </script>
+</body>
 </html>

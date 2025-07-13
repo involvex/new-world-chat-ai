@@ -146,27 +146,27 @@ const MessageHistoryModal = memo<MessageHistoryModalProps>(({ isOpen, onClose, o
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-6xl h-[80vh] flex flex-col border border-gray-700">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-7xl h-[95vh] sm:h-[85vh] flex flex-col border border-gray-700">
         {/* Header */}
-        <div className="p-6 border-b border-gray-700 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-cyan-400">💾 Saved Messages</h2>
-            <p className="text-gray-400 text-sm mt-1">
+        <div className="p-3 sm:p-4 lg:p-6 border-b border-gray-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+          <div className="flex-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-cyan-400">💾 Saved Messages</h2>
+            <p className="text-gray-400 text-xs sm:text-sm mt-1">
               {messageHistory.savedSets.length} saved message sets
             </p>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto justify-end">
             <button
               onClick={handleBackup}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm"
+              className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-xs sm:text-sm touch-manipulation"
               title="Backup all message history"
             >
               📦 Backup
             </button>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-200 text-2xl font-bold"
+              className="text-gray-400 hover:text-gray-200 text-xl sm:text-2xl font-bold touch-manipulation"
               aria-label="Close modal"
             >
               ×
@@ -175,8 +175,8 @@ const MessageHistoryModal = memo<MessageHistoryModalProps>(({ isOpen, onClose, o
         </div>
 
         {/* Controls */}
-        <div className="p-4 border-b border-gray-700/50 flex flex-wrap items-center gap-4">
-          <div className="flex-1 min-w-64">
+        <div className="p-3 sm:p-4 border-b border-gray-700/50 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+          <div className="flex-1 min-w-0">
             <input
               type="text"
               placeholder="Search saved messages..."

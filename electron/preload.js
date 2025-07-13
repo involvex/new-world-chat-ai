@@ -51,6 +51,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Auto-paste to New World
   pasteToNewWorld: (message) => ipcRenderer.invoke('paste-to-new-world', message),
   
+  // Test robotjs functionality
+  testRobotjs: () => ipcRenderer.invoke('test-robotjs'),
+  
   // Utility methods
   invoke: async (channel, data) => {
     const validChannels = ['get-app-version', 'gemini-chat'];

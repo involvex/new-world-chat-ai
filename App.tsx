@@ -12,47 +12,60 @@ const Header = memo<{
   onOpenHistory: () => void; 
   onTakeScreenshot: () => void;
 }>(({ onOpenSettings, onOpenHistory, onTakeScreenshot }) => (
-  <header className="text-center p-6 border-b border-gray-700">
-    <div className="flex justify-between items-center max-w-4xl mx-auto">
-      <div className="flex-1">
-        <h1 className="text-4xl font-bold text-cyan-400 tracking-wider">New World Chat AI</h1>
-        <p className="text-gray-400 mt-2">Upload or paste a game screenshot to generate contextual chat messages.</p>
-        <div className="mt-3 text-sm text-cyan-300 space-y-1">
-          <div>💡 <kbd className="px-1 py-0.5 text-xs font-mono bg-gray-700 rounded">Ctrl+V</kbd> to paste and auto-generate!</div>
-          <div className="text-xs text-gray-500">
-            <kbd className="px-1 py-0.5 font-mono bg-gray-700 rounded">Ctrl+Enter</kbd> Generate • 
-            <kbd className="px-1 py-0.5 font-mono bg-gray-700 rounded ml-1">Ctrl+Shift+Enter</kbd> Funny • 
-            <kbd className="px-1 py-0.5 font-mono bg-gray-700 rounded ml-1">Ctrl+Shift+S</kbd> Screenshot •
-            <kbd className="px-1 py-0.5 font-mono bg-gray-700 rounded ml-1">Esc</kbd> Clear
+  <header className="text-center p-3 sm:p-4 lg:p-6 border-b border-gray-700">
+    <div className="flex flex-col sm:flex-row justify-between items-center max-w-6xl mx-auto gap-4 sm:gap-0">
+      <div className="flex-1 text-center sm:text-left">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-cyan-400 tracking-wider">New World Chat AI</h1>
+        <p className="text-gray-400 mt-1 sm:mt-2 text-sm sm:text-base">Upload or paste a game screenshot to generate contextual chat messages.</p>
+        <div className="mt-2 sm:mt-3 text-xs sm:text-sm text-cyan-300 space-y-1">
+          <div className="flex flex-wrap justify-center sm:justify-start items-center gap-1">
+            💡 <kbd className="px-1 py-0.5 text-xs font-mono bg-gray-700 rounded">Ctrl+V</kbd> to paste and auto-generate!
+          </div>
+          <div className="text-xs text-gray-500 flex flex-wrap justify-center sm:justify-start items-center gap-1">
+            <span className="flex items-center gap-1">
+              <kbd className="px-1 py-0.5 font-mono bg-gray-700 rounded">Ctrl+Enter</kbd> Generate
+            </span>
+            <span className="hidden sm:inline">•</span>
+            <span className="flex items-center gap-1">
+              <kbd className="px-1 py-0.5 font-mono bg-gray-700 rounded">Ctrl+Shift+Enter</kbd> Funny
+            </span>
+            <span className="hidden sm:inline">•</span>
+            <span className="flex items-center gap-1">
+              <kbd className="px-1 py-0.5 font-mono bg-gray-700 rounded">Ctrl+Shift+S</kbd> Screenshot
+            </span>
+            <span className="hidden sm:inline">•</span>
+            <span className="flex items-center gap-1">
+              <kbd className="px-1 py-0.5 font-mono bg-gray-700 rounded">Esc</kbd> Clear
+            </span>
           </div>
         </div>
       </div>
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-1 sm:space-x-2">
         <button
           onClick={onOpenHistory}
-          className="p-2 text-gray-400 hover:text-cyan-400 transition-colors"
+          className="p-2 text-gray-400 hover:text-cyan-400 transition-colors touch-manipulation"
           title="Message History"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </button>
         <button
           onClick={onTakeScreenshot}
-          className="p-2 text-gray-400 hover:text-cyan-400 transition-colors"
+          className="p-2 text-gray-400 hover:text-cyan-400 transition-colors touch-manipulation"
           title="Take Screenshot (Ctrl+Shift+S)"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
         </button>
         <button
           onClick={onOpenSettings}
-          className="p-2 text-gray-400 hover:text-cyan-400 transition-colors"
+          className="p-2 text-gray-400 hover:text-cyan-400 transition-colors touch-manipulation"
           title="Settings"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
@@ -86,12 +99,12 @@ interface NotificationProps {
 }
 
 const Notification = memo<NotificationProps>(({ message, onClose }) => (
-  <div className="fixed top-4 right-4 z-50 bg-cyan-900/90 border border-cyan-500 text-cyan-100 px-4 py-3 rounded-lg shadow-lg backdrop-blur-sm animate-bounce">
+  <div className="fixed top-4 right-4 left-4 sm:left-auto z-50 bg-cyan-900/90 border border-cyan-500 text-cyan-100 px-4 py-3 rounded-lg shadow-lg backdrop-blur-sm animate-bounce max-w-sm sm:max-w-none mx-auto sm:mx-0">
     <div className="flex items-center space-x-2">
-      <span>{message}</span>
+      <span className="text-sm sm:text-base break-words">{message}</span>
       <button
         onClick={onClose}
-        className="text-cyan-300 hover:text-cyan-100 text-lg"
+        className="text-cyan-300 hover:text-cyan-100 text-lg flex-shrink-0 touch-manipulation"
         aria-label="Close notification"
       >
         ×
@@ -161,9 +174,9 @@ const ResponseCard = memo<ResponseCardProps>(({ chatMessage, onPasteToNewWorld }
     }`, [pasting]);
 
   return (
-    <div className="bg-gray-800 rounded-lg p-4 flex items-center justify-between shadow-lg transition-all duration-300 hover:bg-gray-700 hover:shadow-cyan-500/10">
-      <p className="text-lg font-mono text-gray-200 flex-1 mr-4">{chatMessage.message}</p>
-      <div className="flex space-x-2">
+    <div className="bg-gray-800 rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-lg transition-all duration-300 hover:bg-gray-700 hover:shadow-cyan-500/10 gap-3 sm:gap-4">
+      <p className="text-sm sm:text-base lg:text-lg font-mono text-gray-200 flex-1 break-words overflow-wrap-anywhere">{chatMessage.message}</p>
+      <div className="flex space-x-2 flex-shrink-0 self-end sm:self-center">
         <button
           onClick={handleCopy}
           className={buttonClassName}
@@ -720,17 +733,17 @@ function App() {
           onOpenHistory={() => setShowMessageHistory(true)}
           onTakeScreenshot={handleTakeScreenshot}
         />
-        <main className="flex-grow container mx-auto p-4 md:p-8 flex flex-col items-center">
-          <div className="w-full max-w-4xl bg-gray-800/50 rounded-xl shadow-2xl p-6 border border-gray-700 hover-scale">
+        <main className="flex-grow container mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8 flex flex-col items-center">
+          <div className="w-full max-w-6xl bg-gray-800/50 rounded-xl shadow-2xl p-3 sm:p-4 lg:p-6 border border-gray-700 hover-scale">
             
             {!screenshotUrl ? (
               // Step 1: Upload Area with Welcome Message
               <div>
                 {showWelcome && (
-                  <div className="mb-6 p-4 bg-blue-900/30 border border-blue-700/50 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-blue-300 mb-2">🎮 Welcome to New World Chat AI!</h3>
+                  <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-blue-900/30 border border-blue-700/50 rounded-lg">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+                      <div className="flex-1">
+                        <h3 className="text-base sm:text-lg font-semibold text-blue-300 mb-2">🎮 Welcome to New World Chat AI!</h3>
                         <p className="text-blue-200 text-sm mb-2">
                           Get started by uploading a New World screenshot, or simply paste one from your clipboard.
                         </p>
@@ -740,7 +753,7 @@ function App() {
                       </div>
                       <button
                         onClick={() => setShowWelcome(false)}
-                        className="text-blue-300 hover:text-blue-100 text-xl"
+                        className="text-blue-300 hover:text-blue-100 text-xl flex-shrink-0 self-end sm:self-start touch-manipulation"
                         aria-label="Close welcome message"
                       >
                         ×
@@ -750,8 +763,8 @@ function App() {
                 )}
                 
                 {/* Settings Panel */}
-                <div className="mb-4 p-3 bg-gray-700/30 rounded-lg border border-gray-600/50">
-                  <div className="flex items-center justify-between">
+                <div className="mb-3 sm:mb-4 p-3 bg-gray-700/30 rounded-lg border border-gray-600/50">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                     <span className="text-sm text-gray-300">Auto-generate on paste</span>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -772,23 +785,23 @@ function App() {
 
                 <div 
                   onClick={triggerFileInput}
-                  className="w-full max-w-2xl mx-auto border-2 border-dashed border-gray-600 rounded-xl p-10 cursor-pointer hover:border-cyan-500 hover:bg-gray-800/70 transition-all duration-300 flex flex-col items-center justify-center gradient-border"
+                  className="w-full max-w-2xl mx-auto border-2 border-dashed border-gray-600 rounded-xl p-6 sm:p-8 lg:p-10 cursor-pointer hover:border-cyan-500 hover:bg-gray-800/70 transition-all duration-300 flex flex-col items-center justify-center gradient-border touch-manipulation"
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => e.key === 'Enter' && triggerFileInput()}
                   aria-label="Upload screenshot area"
                 >
-                  <div className="gradient-border-inner p-8 flex flex-col items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="gradient-border-inner p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-gray-500 mb-3 sm:mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
-                    <p className="text-xl font-semibold text-gray-300">Click to upload an image</p>
-                    <p className="text-gray-400 mt-1">
-                      press <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">Ctrl</kbd> + <kbd className="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">V</kbd> to paste, 
+                    <p className="text-lg sm:text-xl font-semibold text-gray-300 text-center">Click to upload an image</p>
+                    <p className="text-gray-400 mt-1 text-center text-sm sm:text-base">
+                      press <kbd className="px-1.5 sm:px-2 py-1 sm:py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">Ctrl</kbd> + <kbd className="px-1.5 sm:px-2 py-1 sm:py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg">V</kbd> to paste, 
                       or drag & drop
                     </p>
                     {autoGenerate && (
-                      <p className="text-xs text-cyan-400 mt-2">✨ Auto-generation enabled - paste to start immediately!</p>
+                      <p className="text-xs text-cyan-400 mt-2 text-center">✨ Auto-generation enabled - paste to start immediately!</p>
                     )}
                   </div>
                 </div>
@@ -805,48 +818,48 @@ function App() {
             ) : (
               // Step 2: Preview & Actions
               <div className="flex flex-col items-center">
-                <h2 className="text-2xl font-semibold text-gray-300 mb-4">Screenshot Preview</h2>
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-300 mb-3 sm:mb-4 text-center">Screenshot Preview</h2>
                 <div className="w-full max-w-2xl rounded-lg overflow-hidden shadow-lg border-2 border-gray-600 hover-scale">
-                  <img src={screenshotUrl} alt="Screenshot preview" className="w-full h-auto" loading="lazy" />
+                  <img src={screenshotUrl} alt="Screenshot preview" className="w-full h-auto max-h-48 sm:max-h-64 lg:max-h-80 object-contain bg-gray-700" loading="lazy" />
                 </div>
-                <div className="flex flex-wrap justify-center items-center gap-4 mt-6">
+                <div className="flex flex-col sm:flex-row flex-wrap justify-center items-center gap-3 sm:gap-4 mt-4 sm:mt-6 w-full">
                    <button
                       onClick={resetSelection}
-                      className="bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-gray-500 transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-800"
+                      className="w-full sm:w-auto bg-gray-600 text-white font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg hover:bg-gray-500 transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-800 text-sm sm:text-base touch-manipulation"
                     >
                       Use Another Image
                     </button>
                   
                   {!responses ? (
-                    <div className="flex flex-wrap gap-3 justify-center">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center w-full sm:w-auto">
                       <button
                         onClick={() => handleGeneration()}
                         disabled={isLoading}
-                        className="bg-green-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-green-500 transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100"
+                        className="w-full sm:w-auto bg-green-600 text-white font-bold py-2 sm:py-3 px-4 sm:px-8 rounded-lg shadow-lg hover:bg-green-500 transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100 text-sm sm:text-base touch-manipulation"
                       >
                         {isLoading ? 'Generating...' : 'Generate Chat Messages'}
                       </button>
                       <button
                         onClick={() => handleGeneration(true)}
                         disabled={isLoading}
-                        className="bg-purple-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-purple-500 transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100"
+                        className="w-full sm:w-auto bg-purple-600 text-white font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg hover:bg-purple-500 transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100 text-sm sm:text-base touch-manipulation"
                       >
                         {isLoading ? 'Making it funnier...' : 'Generate Funny Messages'}
                       </button>
                     </div>
                   ) : (
-                    <>
+                    <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 justify-center w-full sm:w-auto">
                       <button
                         onClick={() => handleGeneration()}
                         disabled={isLoading}
-                        className="bg-cyan-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-cyan-500 transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100"
+                        className="w-full sm:w-auto bg-cyan-600 text-white font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg hover:bg-cyan-500 transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100 text-sm sm:text-base touch-manipulation"
                       >
                         {isLoading ? 'Generating...' : currentMessageSet ? 'Continue Generating' : 'Generate More'}
                       </button>
                       <button
                         onClick={() => handleGeneration(true)}
                         disabled={isLoading || isFunnier}
-                        className={`font-bold py-3 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:cursor-not-allowed disabled:scale-100 ${
+                        className={`w-full sm:w-auto font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:cursor-not-allowed disabled:scale-100 text-sm sm:text-base touch-manipulation ${
                           isFunnier 
                             ? 'bg-yellow-500 text-gray-900 focus:ring-yellow-400 cursor-default' 
                             : 'bg-purple-600 text-white hover:bg-purple-500 focus:ring-purple-400'
@@ -857,7 +870,7 @@ function App() {
                       
                       {/* Custom Prompts Dropdown */}
                       {customPrompts.length > 0 && (
-                        <div className="relative">
+                        <div className="relative w-full sm:w-auto">
                           <select
                             value={selectedCustomPrompt}
                             onChange={(e) => {
@@ -870,7 +883,7 @@ function App() {
                             disabled={isLoading}
                             title="Select a custom prompt"
                             aria-label="Custom prompts"
-                            className="bg-gradient-to-r from-orange-600 to-orange-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg hover:from-orange-500 hover:to-orange-400 transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100"
+                            className="w-full sm:w-auto bg-gradient-to-r from-orange-600 to-orange-500 text-white font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg hover:from-orange-500 hover:to-orange-400 transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:ring-offset-gray-800 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100 text-sm sm:text-base touch-manipulation"
                           >
                             <option value="">🎯 Custom Prompts</option>
                             {customPrompts.map(prompt => (
@@ -881,40 +894,40 @@ function App() {
                           </select>
                         </div>
                       )}
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
             )}
 
             {/* Step 3: Display Results */}
-            <div className="mt-8 w-full">
+            <div className="mt-6 sm:mt-8 w-full">
               {isLoading && <Loader />}
               {error && (
-                <div className="bg-red-900/50 border border-red-700 text-red-300 p-4 rounded-lg text-center">
-                  <p className="font-semibold mb-2">Error</p>
-                  <p>{error}</p>
+                <div className="bg-red-900/50 border border-red-700 text-red-300 p-3 sm:p-4 rounded-lg text-center">
+                  <p className="font-semibold mb-2 text-sm sm:text-base">Error</p>
+                  <p className="text-sm sm:text-base break-words">{error}</p>
                   <button
                     onClick={() => setError(null)}
-                    className="mt-2 text-sm underline hover:no-underline"
+                    className="mt-2 text-sm underline hover:no-underline touch-manipulation"
                   >
                     Dismiss
                   </button>
                 </div>
               )}
               {responses && responses.chatMessages.length > 0 && (
-                <div className="space-y-4 pt-6 border-t border-gray-700/50">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-semibold text-gray-300">Generated Responses ({responses.chatMessages.length})</h2>
-                    <div className="flex items-center space-x-3">
+                <div className="space-y-3 sm:space-y-4 pt-4 sm:pt-6 border-t border-gray-700/50">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+                    <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-300">Generated Responses ({responses.chatMessages.length})</h2>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                       {currentMessageSet && (
-                        <div className="text-sm text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/30">
+                        <div className="text-xs sm:text-sm text-cyan-400 bg-cyan-500/10 px-2 sm:px-3 py-1 rounded-full border border-cyan-500/30 w-fit">
                           📁 {currentMessageSet.name}
                         </div>
                       )}
                       <button
                         onClick={handleSaveMessages}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors font-semibold text-sm"
+                        className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors font-semibold text-xs sm:text-sm touch-manipulation"
                         title="Save these messages"
                       >
                         💾 Save Messages
@@ -934,8 +947,18 @@ function App() {
 
           </div>
         </main>
-        <footer className="text-center text-gray-500 p-4 text-sm">
-          <p>by Ina Venox | Optimized for performance ⚡</p>
+        <footer className="text-center text-gray-500 p-3 sm:p-4 text-xs sm:text-sm border-t border-gray-700/30">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
+            <p className="flex items-center gap-1">
+              Created with ❤️ by 
+              <span className="text-cyan-400 font-semibold">Ina Venox</span>
+              <span className="text-gray-600">|</span>
+              <span className="text-yellow-400">Optimized for performance ⚡</span>
+            </p>
+            <div className="flex items-center gap-2 text-xs text-gray-600">
+              <span>"Why walk to Everfall when you can teleport... if you have azoth!" 🧭💨</span>
+            </div>
+          </div>
         </footer>
       </div>
       
@@ -961,7 +984,7 @@ function App() {
       
       {/* Save notification */}
       {saveNotification && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-60 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg">
+        <div className="fixed top-4 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-60 bg-green-600 text-white px-4 sm:px-6 py-3 rounded-lg shadow-lg max-w-sm sm:max-w-none mx-auto sm:mx-0 text-sm sm:text-base">
           {saveNotification}
         </div>
       )}
