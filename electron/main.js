@@ -45,7 +45,11 @@ let tray;
 // Set app icon for Windows and Linux
 if (process.platform === 'win32' || process.platform === 'linux') {
   app.setAppUserModelId('com.inavenox.newworldchatai');
-  app.setIcon && app.setIcon(join(__dirname, '../build/icon.ico'));
+  try {
+    app.setIcon && app.setIcon(join(__dirname, '../build/icon.png'));
+  } catch (error) {
+    console.warn('Failed to set app icon:', error.message);
+  }
 }
 let settingsWindow;
 
@@ -347,8 +351,28 @@ function createSettingsWindow() {
 }
 
 function createTray() {
-  // Create tray icon
-  tray = new Tray(join(__dirname, '../build/icon.png'));
+  try {
+    // Create tray icon - handle both dev and production paths
+    let trayIconPath = join(__dirname, '../build/icon.png');
+    
+    // If the icon doesn't exist at the default path, try the production path
+    if (!fs.existsSync(trayIconPath)) {
+      trayIconPath = join(__dirname, '../../build/icon.png');
+    }
+    
+    console.log('Creating tray with icon:', trayIconPath);
+    
+    if (!fs.existsSync(trayIconPath)) {
+      console.error('Tray icon file not found at any expected location');
+      return;
+    }
+    
+    tray = new Tray(trayIconPath);
+    console.log('System tray created successfully');
+  } catch (error) {
+    console.error('Failed to create system tray:', error.message);
+    return;
+  }
   
   const contextMenu = Menu.buildFromTemplate([
     {
