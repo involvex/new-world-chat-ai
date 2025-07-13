@@ -2,7 +2,7 @@
   "name": "new-world-chat-ai",
   "description": "Generate multiple in-game chat responses for the MMORPG 'New World' based on a screenshot. The generated messages contain no special characters, making them perfect for quick copy-pasting into chat.",
   "private": false,
-  "version": "1.0.0",
+  "version": "1.0.2",
   "type": "module",
   "author": {
     "name": "Involvex"
@@ -15,6 +15,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:web": "vite build --config vite.config.web.ts",
     "build:analyze": "vite build --mode analyze",
     "preview": "vite preview",
     "electron": "electron .",

@@ -260,15 +260,36 @@ function App() {
   }, [screenshotUrl, isLoading]);
 
   const processImageFile = useCallback(async (file: File | null, shouldAutoGenerate: boolean = false) => {
-    if (!file) return;
+    console.log('processImageFile called with:', file?.name, file?.size, 'shouldAutoGenerate:', shouldAutoGenerate);
+    
+    if (!file) {
+      console.log('No file provided to processImageFile');
+      return;
+    }
     
     // Clean up old URL if it exists
     if (screenshotUrl) {
+      console.log('Cleaning up old screenshot URL');
       URL.revokeObjectURL(screenshotUrl);
     }
     
-    const newUrl = URL.createObjectURL(file);
-    setScreenshotUrl(newUrl);
+    // Convert file directly to data URL instead of using blob URL
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (typeof result === 'string') {
+          resolve(result);
+        } else {
+          reject(new Error('Failed to read file as data URL'));
+        }
+      };
+      reader.onerror = () => reject(new Error('File reading failed'));
+      reader.readAsDataURL(file);
+    });
+    
+    console.log('Created data URL directly from file:', dataUrl.substring(0, 50) + '...');
+    setScreenshotUrl(dataUrl);
 
     // Reset app state for a new image
     setResponses(null);
@@ -277,11 +298,15 @@ function App() {
     setIsFunnier(false);
     setShowWelcome(false);
 
+    console.log('Auto-generate enabled:', autoGenerate, 'Should auto-generate:', shouldAutoGenerate);
+
     // Show notification for auto-generation
     if (shouldAutoGenerate && autoGenerate) {
       setNotification("📸 Screenshot pasted! Auto-generating chat messages...");
+      console.log('Starting auto-generation after delay...');
       // Small delay to let the UI update
       setTimeout(() => {
+        console.log('Triggering auto-generation...');
         handleGeneration();
         setNotification(null);
       }, 1000);
@@ -464,13 +489,14 @@ function App() {
     }
   }, [currentMessageSet, screenshotUrl, isFunnier, responses]);
 
-  const handleGeneration = useCallback(async (makeItFunnier: boolean = false) => {
+  const handleGeneration = useCallback(async (makeItFunnier: boolean = false, imageUrl?: string) => {
     // If we have a current message set, continue from it
     if (currentMessageSet && responses) {
       return handleContinueFromSaved(makeItFunnier);
     }
 
-    if (!screenshotUrl) {
+    const imageToUse = imageUrl || screenshotUrl;
+    if (!imageToUse) {
       setError("Please select or paste a screenshot first.");
       return;
     }
@@ -484,7 +510,7 @@ function App() {
     setError(null);
     setResponses(null); // Clear previous responses before fetching new ones
     try {
-      const result = await generateChatResponses(screenshotUrl, funninessLevel);
+      const result = await generateChatResponses(imageToUse, funninessLevel);
       setResponses(result);
       // Clear current message set when generating new messages
       setCurrentMessageSet(null);
@@ -516,6 +542,9 @@ function App() {
       } catch (error) {
         setError('Failed to take screenshot');
       }
+    } else {
+      // Web version - show instruction for manual screenshot
+      setError("Web version: Please take a screenshot manually (Print Screen) and paste it with Ctrl+V");
     }
   }, [processImageFile]);
 
@@ -555,24 +584,48 @@ function App() {
   useEffect(() => {
     if (window.electronAPI) {
       window.electronAPI.receive('hotkey-screenshot-captured', (dataUrl: string) => {
-        // Convert data URL to blob then to object URL for consistent handling
-        fetch(dataUrl)
-          .then(res => res.blob())
-          .then(blob => {
-            const file = new File([blob], 'screenshot.png', { type: 'image/png' });
-            processImageFile(file, true); // Auto-generate on screenshot
-          })
-          .catch(error => {
-            console.error('Error processing screenshot:', error);
-            setError('Failed to process screenshot');
-          });
+        console.log('Screenshot captured, processing...', dataUrl.substring(0, 50) + '...');
+        
+        try {
+          // Set notification immediately
+          setNotification("📸 Screenshot captured! Processing...");
+          
+          // Use the data URL directly instead of converting to blob/file
+          // This avoids blob URL lifecycle issues
+          setScreenshotUrl(dataUrl);
+          
+          // Reset app state for a new image
+          setResponses(null);
+          setError(null);
+          setIsLoading(false);
+          setIsFunnier(false);
+          setShowWelcome(false);
+
+          // Auto-generate if enabled
+          if (autoGenerate) {
+            setTimeout(() => {
+              console.log('Triggering auto-generation from screenshot...');
+              handleGeneration(false, dataUrl); // Pass the dataUrl directly
+              setNotification(null);
+            }, 1000);
+          } else {
+            setNotification("📸 Screenshot captured! Click 'Generate Chat Messages' to continue.");
+            setTimeout(() => setNotification(null), 3000);
+          }
+        } catch (error) {
+          console.error('Error in screenshot handler:', error);
+          setError('Failed to handle screenshot: ' + (error instanceof Error ? error.message : String(error)));
+          setNotification(null);
+        }
       });
 
       window.electronAPI.receive('hotkey-screenshot-error', (error: string) => {
+        console.error('Screenshot hotkey error:', error);
         setError(`Screenshot failed: ${error}`);
+        setNotification(null);
       });
     }
-  }, [processImageFile]);
+  }, [autoGenerate]);
 
   return (
     <ErrorBoundary>

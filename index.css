@@ -1,0 +1,14 @@
+/* Web-specific styles */
+body {
+  margin: 0;
+  padding: 0;
+  background: #111827;
+  color: #e5e7eb;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Base styles will be handled by Tailwind in the app */

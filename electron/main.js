@@ -98,9 +98,13 @@ let config = loadConfig();
 // Screenshot functionality
 async function captureScreenshot() {
   try {
+    console.log('Starting screenshot capture...');
+    
     // Get all displays
     const displays = screen.getAllDisplays();
     const primaryDisplay = screen.getPrimaryDisplay();
+    
+    console.log('Primary display size:', primaryDisplay.size);
     
     // Get desktop capturer sources
     const sources = await desktopCapturer.getSources({
@@ -111,6 +115,8 @@ async function captureScreenshot() {
       }
     });
 
+    console.log('Desktop capturer sources found:', sources.length);
+
     if (sources.length === 0) {
       throw new Error('No screen sources available');
     }
@@ -119,8 +125,12 @@ async function captureScreenshot() {
     const source = sources[0];
     const screenshot = source.thumbnail;
     
+    console.log('Screenshot captured, size:', screenshot.getSize());
+    
     // Convert to base64 data URL
     const screenshotDataUrl = screenshot.toDataURL();
+    
+    console.log('Screenshot data URL created, length:', screenshotDataUrl.length);
     
     return screenshotDataUrl;
   } catch (error) {
@@ -139,6 +149,8 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: join(__dirname, 'preload.js'),
+      webSecurity: true, // Keep security enabled but allow local resources
+      allowRunningInsecureContent: false,
     },
   });
 
@@ -401,9 +413,12 @@ function registerGlobalShortcuts() {
 
   // Register screenshot shortcut
   globalShortcut.register(config.hotkeys.screenshot, async () => {
+    console.log('Screenshot hotkey pressed!');
+    
     try {
       // Show and focus the window first
       if (mainWindow) {
+        console.log('Window exists, showing and focusing...');
         if (!mainWindow.isVisible()) {
           mainWindow.show();
         }
@@ -412,7 +427,9 @@ function registerGlobalShortcuts() {
         // Small delay to ensure window is focused before taking screenshot
         setTimeout(async () => {
           try {
+            console.log('Taking screenshot...');
             const screenshotDataUrl = await captureScreenshot();
+            console.log('Screenshot captured successfully, sending to renderer...');
             // Send screenshot to renderer process
             mainWindow.webContents.send('hotkey-screenshot-captured', screenshotDataUrl);
           } catch (error) {
@@ -421,11 +438,14 @@ function registerGlobalShortcuts() {
           }
         }, 200);
       } else {
+        console.log('No window exists, creating one...');
         createWindow();
         // Wait for window to be created and then take screenshot
         setTimeout(async () => {
           try {
+            console.log('Taking screenshot after window creation...');
             const screenshotDataUrl = await captureScreenshot();
+            console.log('Screenshot captured successfully, sending to renderer...');
             mainWindow.webContents.send('hotkey-screenshot-captured', screenshotDataUrl);
           } catch (error) {
             console.error('Screenshot capture failed:', error);

@@ -15,19 +15,41 @@ const getAIInstance = (): GoogleGenAI => {
 };
 
 // Helper to convert an image URL to a base64 string with better error handling
-const convertImageURLToBase64 = async (url: string): Promise<string> => {
+const convertImageURLToBase64 = async (url: string): Promise<{ base64: string; mimeType: string }> => {
   try {
+    console.log('Converting image URL to base64:', url.substring(0, 50) + '...');
+    
+    // Check if it's already a data URL
+    if (url.startsWith('data:')) {
+      const parts = url.split(',');
+      if (parts.length !== 2) {
+        throw new Error('Invalid data URL format');
+      }
+      
+      const mimeMatch = parts[0].match(/data:([^;]+)/);
+      const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
+      const base64 = parts[1];
+      
+      console.log('Data URL processed directly, MIME type:', mimeType, 'Base64 length:', base64.length);
+      return { base64, mimeType };
+    }
+    
+    // For blob URLs or regular URLs, use fetch
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
     }
     
     const blob = await response.blob();
+    console.log('Image blob obtained, size:', blob.size, 'type:', blob.type);
     
     // Validate image size (max 20MB)
     if (blob.size > 20 * 1024 * 1024) {
       throw new Error('Image file is too large. Please use an image smaller than 20MB.');
     }
+    
+    // Get MIME type from blob, fallback to image/png for screenshots
+    const mimeType = blob.type || 'image/png';
     
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -35,7 +57,8 @@ const convertImageURLToBase64 = async (url: string): Promise<string> => {
         if (typeof reader.result === 'string') {
           const base64String = reader.result.split(',')[1];
           if (base64String) {
-            resolve(base64String);
+            console.log('Base64 conversion successful, length:', base64String.length);
+            resolve({ base64: base64String, mimeType });
           } else {
             reject(new Error('Could not extract base64 string from data URL.'));
           }
@@ -43,10 +66,11 @@ const convertImageURLToBase64 = async (url: string): Promise<string> => {
           reject(new Error('Failed to read blob as a data URL.'));
         }
       };
-      reader.onerror = (error) => reject(new Error(`FileReader error: ${error}`));
+      reader.onerror = () => reject(new Error('FileReader error'));
       reader.readAsDataURL(blob);
     });
   } catch (error) {
+    console.error('Image processing error:', error);
     throw new Error(`Image processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 };
@@ -74,17 +98,15 @@ const responseSchema = {
 
 export const generateChatResponses = async (imageUrl: string, isFunnier: boolean = false): Promise<ApiResponse> => {
   try {
+    console.log('Generating chat responses for image:', imageUrl.substring(0, 50) + '...');
+    
     const ai = getAIInstance();
-    const base64ImageData = await convertImageURLToBase64(imageUrl);
-
-    // Determine MIME type from the original URL/blob
-    const response = await fetch(imageUrl);
-    const contentType = response.headers.get('content-type') || 'image/jpeg';
+    const imageData = await convertImageURLToBase64(imageUrl);
 
     const imagePart = {
       inlineData: {
-        mimeType: contentType,
-        data: base64ImageData,
+        mimeType: imageData.mimeType,
+        data: imageData.base64,
       },
     };
 
@@ -100,6 +122,8 @@ export const generateChatResponses = async (imageUrl: string, isFunnier: boolean
       text: promptText
     };
 
+    console.log('Sending request to Gemini API...');
+    
     const result = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: { parts: [imagePart, textPart] },
@@ -111,6 +135,8 @@ export const generateChatResponses = async (imageUrl: string, isFunnier: boolean
         maxOutputTokens: 1000,
       }
     });
+    
+    console.log('Received response from Gemini API');
     
     const jsonString = result.text?.trim() || '';
     if (!jsonString) {
@@ -143,6 +169,7 @@ export const generateChatResponses = async (imageUrl: string, isFunnier: boolean
       throw new Error("All generated messages were invalid. Please try again.");
     }
 
+    console.log('Successfully generated', parsedResponse.chatMessages.length, 'chat messages');
     return parsedResponse;
 
   } catch (error) {
