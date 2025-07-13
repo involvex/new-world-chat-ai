@@ -6,7 +6,7 @@
 
 **Generate hilarious chat messages for New World using AI! 🤖✨**
 
-[![Version](https://img.shields.io/badge/version-1.1.2-blue.svg)](https://github.com/involvex/new-world-chat-ai/releases)
+[![Version](https://img.shields.io/badge/version-1.3.2-blue.svg)](https://github.com/involvex/new-world-chat-ai/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)](https://github.com/involvex/new-world-chat-ai)
 [![GitHub Stars](https://img.shields.io/github/stars/involvex/new-world-chat-ai?style=social)](https://github.com/involvex/new-world-chat-ai/stargazers)
