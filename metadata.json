@@ -1,0 +1,8 @@
+{
+  "name": "New World Chat AI",
+  "author": {
+    "name": "Involvex"
+  },
+  "description": "Generate multiple in-game chat responses for the MMORPG 'New World' based on a screenshot. The generated messages contain no special characters, making them perfect for quick copy-pasting into chat.",
+  "requestFramePermissions": []
+}

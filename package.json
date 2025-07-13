@@ -1,0 +1,130 @@
+{
+  "name": "new-world-chat-ai",
+  "description": "Generate multiple in-game chat responses for the MMORPG 'New World' based on a screenshot. The generated messages contain no special characters, making them perfect for quick copy-pasting into chat.",
+  "private": false,
+  "version": "1.0.0",
+  "type": "module",
+  "author": {
+    "name": "Involvex"
+  },
+  "license": "MIT",
+  "github": {
+    "url": "https://github.com/involvex/new-world-chat-ai.git"
+  },
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:analyze": "vite build --mode analyze",
+    "preview": "vite preview",
+    "electron": "electron .",
+    "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
+    "electron-prod": "npm run build && cross-env NODE_ENV=production electron .",
+    "build-electron": "npm run build && electron-builder",
+    "dist": "npm run build && electron-builder --publish=never",
+    "release": "npm run clean && npm run typecheck && npm run build && electron-builder --publish=never",
+    "release:win": "npm run clean && npm run typecheck && npm run build && electron-builder --win --publish=never",
+    "release:mac": "npm run clean && npm run typecheck && npm run build && electron-builder --mac --publish=never",
+    "release:linux": "npm run clean && npm run typecheck && npm run build && electron-builder --linux --publish=never",
+    "prerelease": "npm run clean && npm run typecheck && npm run build && electron-builder --publish=never",
+    "lint": "echo 'Add linting if needed'",
+    "test": "echo 'Add tests if needed'",
+    "clean": "rimraf dist dist-electron",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/genai": "^1.9.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^29.3.0",
+    "electron-builder": "^26.0.18",
+    "rimraf": "^5.0.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.2.0",
+    "wait-on": "^8.0.0"
+  },
+  "build": {
+    "appId": "com.involvex.new-world-chat-ai",
+    "productName": "New World Chat AI",
+    "directories": {
+      "output": "dist-electron",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json",
+      "!node_modules/**/*",
+      "node_modules/@google/genai/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "build/",
+        "to": "build/",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.icns",
+      "category": "public.app-category.games"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "Game"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "New World Chat AI"
+    },
+    "portable": {
+      "artifactName": "NewWorldChatAI-${version}-portable.exe"
+    },
+    "dmg": {
+      "title": "New World Chat AI ${version}",
+      "artifactName": "NewWorldChatAI-${version}.dmg"
+    },
+    "appImage": {
+      "artifactName": "NewWorldChatAI-${version}.AppImage"
+    },
+    "deb": {
+      "artifactName": "NewWorldChatAI-${version}.deb"
+    }
+  }
+}
+  
