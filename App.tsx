@@ -116,7 +116,7 @@ const ResponseCard = memo<ResponseCardProps>(({ chatMessage, onPasteToNewWorld }
     setTimeout(() => setCopied(false), 2000);
   }, [chatMessage.message]);
 
-  const handlePasteToNewWorld = useCallback(async () => {
+  const handlePasteToGame = useCallback(async () => {
     if (onPasteToNewWorld) {
       setPasting(true);
       try {
@@ -174,7 +174,7 @@ const ResponseCard = memo<ResponseCardProps>(({ chatMessage, onPasteToNewWorld }
         </button>
         {onPasteToNewWorld && (
           <button
-            onClick={handlePasteToNewWorld}
+            onClick={handlePasteToGame}
             className={pasteButtonClassName}
             aria-label="Paste to New World"
             title="Auto-paste to New World chat"
@@ -620,29 +620,6 @@ function App() {
       setError("Web version: Please take a screenshot manually (Print Screen) and paste it with Ctrl+V");
     }
   }, [processImageFile]);
-
-  const handlePasteToNewWorld = useCallback(async (message: string) => {
-    if (!window.electronAPI) {
-      setError("Auto-paste feature only available in desktop version");
-      return;
-    }
-
-    try {
-      setNotification("🎮 Pasting to New World...");
-      const result = await window.electronAPI.pasteToNewWorld(message);
-      
-      if (result.success) {
-        setNotification("✅ Message sent to New World chat!");
-        setTimeout(() => setNotification(null), 3000);
-      } else {
-        setError(`Auto-paste failed: ${result.error}`);
-        setNotification(null);
-      }
-    } catch (error) {
-      setError('Failed to paste to New World: ' + (error instanceof Error ? error.message : String(error)));
-      setNotification(null);
-    }
-  }, []);
 
   // Keyboard shortcuts effect
   useEffect(() => {
