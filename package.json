@@ -69,7 +69,6 @@
     "cross-env": "^7.0.3",
     "electron": "^29.4.6",
     "electron-builder": "^26.0.18",
-    "electron-devtools-installer": "^4.0.0",
     "png-to-ico": "^2.1.8",
     "rimraf": "^5.0.10",
     "robotjs": "^0.6.0",

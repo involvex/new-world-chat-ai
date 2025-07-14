@@ -3,7 +3,7 @@ const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, shell, 
 const { join } = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
-const { default: installExtension, REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } = require('electron-devtools-installer');
+
 
 // Import enhanced screenshot manager
 const ScreenshotManager = require('./screenshot-fix');
@@ -157,20 +157,7 @@ async function captureScreenshot() {
     return dataUrl;
     
   } catch (error) {
-    console.error('Enhanced screenshot capture failed, falling back to legacy method:', error);
-    
-    // Fallback to legacy screenshot method
-    try {
-      return await legacyCaptureScreenshot();
-    } catch (legacyError) {
-      console.error('Legacy screenshot method also failed:', legacyError);
-      throw new Error(`All screenshot methods failed. Enhanced: ${error.message}, Legacy: ${legacyError.message}`);
-    }
-  }
-}
 
-// Legacy screenshot method as fallback
-async function legacyCaptureScreenshot() {
   console.log('Using legacy screenshot capture...');
   
   try {
