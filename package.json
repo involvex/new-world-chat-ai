@@ -80,7 +80,7 @@
   "build": {
     "appId": "com.involvex.new-world-chat-ai",
     "productName": "New World Chat AI",
-    "buildVersion": "${env.BUILD_NUMBER}",
+    "buildVersion": "1.4.0.0",
     "directories": {
       "output": "dist-electron",
       "buildResources": "build"
@@ -124,8 +124,7 @@
       ],
       "icon": "build/icon.png",
       "requestedExecutionLevel": "asInvoker",
-      "artifactName": "${productName}-${version}-${arch}.${ext}",
-      "publisherName": "Ina Venox"
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
     "mac": {
       "target": "dmg",
@@ -177,7 +176,7 @@
     "deb": {
       "artifactName": "${productName}-${version}.${ext}"
     },
-    "afterSign": "scripts/notarize.js",
-    "afterPack": "scripts/after-pack.js"
+    "afterSign": "scripts/notarize.cjs",
+    "afterPack": "scripts/after-pack.cjs"
   }
 }
