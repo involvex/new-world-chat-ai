@@ -38,7 +38,7 @@ try {
       const stats = fs.statSync(filePath);
       if (stats.isFile()) {
         const sizeMB = Math.round(stats.size / 1024 / 1024);
-        console.log(\  📄 \ (\MB)\);
+        console.log(`  📄 ${file} (${sizeMB}MB)`);
       }
     });
   }

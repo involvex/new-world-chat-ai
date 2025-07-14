@@ -146,7 +146,7 @@ async function captureScreenshot() {
     // Get desktop capturer sources
     const sources = await desktopCapturer.getSources({
       types: ['screen'],
-      thumbnailSize: { width: 64, height: 64 }  // HDR-safe: bypasses format issues
+      thumbnailSize: { width: 0, height: 0 }  // HDR-safe: bypasses format issues
     });
 
     console.log('Desktop capturer sources found:', sources.length);
@@ -894,4 +894,3 @@ app.on('activate', () => {
 app.on('will-quit', () => {
   globalShortcut.unregisterAll();
 });
-

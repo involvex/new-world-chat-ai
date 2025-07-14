@@ -5,7 +5,7 @@ import SettingsModal from './src/components/SettingsModal';
 import MessageHistoryModal from './src/components/MessageHistoryModal';
 import SaveMessageDialog from './src/components/SaveMessageDialog';
 import AboutModal from './src/components/AboutModal';
-import { installExtension, REDUX_DEVTOOLS } from 'electron-devtools-installer';
+
 
 
 // --- Helper UI Components (memoized for performance) ---

@@ -135,13 +135,13 @@ let config = loadConfig();
 // Screenshot functionality
 async function captureScreenshot() {
   try {
-    console.log('Starting screenshot capture...');
+    console.log('?? NEW_FUNCTION_MARKER...');
     
     // Get all displays
     const displays = screen.getAllDisplays();
     const primaryDisplay = screen.getPrimaryDisplay();
     
-    console.log('Primary display size:', primaryDisplay.size);
+    console.log('??? Display Detection - Primary:', primaryDisplay.size);
     
     // Get desktop capturer sources
     const sources = await desktopCapturer.getSources({
@@ -149,7 +149,7 @@ async function captureScreenshot() {
       thumbnailSize: { width: 64, height: 64 }  // HDR-safe: bypasses format issues
     });
 
-    console.log('Desktop capturer sources found:', sources.length);
+    console.log('??? Sources found:', sources.length);
 
     if (sources.length === 0) {
       throw new Error('No screen sources available');
@@ -501,7 +501,7 @@ function registerGlobalShortcuts() {
         // Small delay to ensure window is focused before taking screenshot
         setTimeout(async () => {
           try {
-            console.log('Taking screenshot...');
+            console.log('?? Taking screenshot from Monitor 1...');
             const screenshotDataUrl = await captureScreenshot();
             console.log('Screenshot captured successfully, sending to renderer...');
             // Send screenshot to renderer process
@@ -894,4 +894,3 @@ app.on('activate', () => {
 app.on('will-quit', () => {
   globalShortcut.unregisterAll();
 });
-
