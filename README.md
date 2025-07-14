@@ -1,9 +1,4 @@
 
-> **🚨 BIG HINT: Get your own silly AI agent! 🚨**
->
-> This app features LAZY screenshot and instant chat paste functions for New World. Just set your [Gemini API key](https://aistudio.google.com/app/apikey) in the app settings and enjoy!
->
-> 👉 [Download the latest release here!](https://github.com/involvex/new-world-chat-ai/releases)
 
 # 🎮 New World Chat AI
 
