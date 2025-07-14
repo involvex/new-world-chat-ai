@@ -24,6 +24,10 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install X11 dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxext-dev libxtst-dev libpng++-dev
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -101,7 +105,8 @@ jobs:
           git add package.json RELEASE_NOTES.md
           git commit -m "chore(release): bump version to ${{ steps.version.outputs.new-version }} [skip ci]"
           git tag "v${{ steps.version.outputs.new-version }}"
-          git push origin main --follow-tags
+          # Use --atomic to push main and tag together
+          git push --atomic origin main v${{ steps.version.outputs.new-version }}
 
       - name: Trigger release workflow
         if: steps.version.outputs.version-changed == 'true'
