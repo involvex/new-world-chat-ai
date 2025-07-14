@@ -1,0 +1,110 @@
+name: Auto Version and Release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.gitignore'
+
+jobs:
+  auto-version:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    outputs:
+      new-version: ${{ steps.version.outputs.new-version }}
+      version-changed: ${{ steps.version.outputs.version-changed }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Determine version bump type
+        id: version-type
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          echo "Commit message: $COMMIT_MSG"
+          
+          if [[ "$COMMIT_MSG" =~ ^feat(\(.+\))?!:|^fix(\(.+\))?!:|BREAKING\ CHANGE ]]; then
+            echo "type=major" >> $GITHUB_OUTPUT
+            echo "Detected: BREAKING CHANGE -> major version bump"
+          elif [[ "$COMMIT_MSG" =~ ^feat(\(.+\))?: ]]; then
+            echo "type=minor" >> $GITHUB_OUTPUT
+            echo "Detected: feature -> minor version bump"
+          elif [[ "$COMMIT_MSG" =~ ^fix(\(.+\))?: ]]; then
+            echo "type=patch" >> $GITHUB_OUTPUT
+            echo "Detected: fix -> patch version bump"
+          elif [[ "$COMMIT_MSG" =~ ^(docs|style|refactor|perf|test|chore)(\(.+\))?: ]]; then
+            echo "type=patch" >> $GITHUB_OUTPUT
+            echo "Detected: maintenance -> patch version bump"
+          else
+            echo "type=patch" >> $GITHUB_OUTPUT
+            echo "Default: patch version bump"
+          fi
+
+      - name: Bump version
+        id: version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current version: $CURRENT_VERSION"
+          
+          npm version ${{ steps.version-type.outputs.type }} --no-git-tag-version
+          
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "New version: $NEW_VERSION"
+          echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          
+          if [[ "$CURRENT_VERSION" != "$NEW_VERSION" ]]; then
+            echo "version-changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "version-changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create release notes
+        if: steps.version.outputs.version-changed == 'true'
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.new-version }}"
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          
+          echo "# Release Notes for v$NEW_VERSION" > RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## Changes" >> RELEASE_NOTES.md
+          echo "- $COMMIT_MSG" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## Commit Details" >> RELEASE_NOTES.md
+          echo "- **Commit**: ${{ github.event.head_commit.id }}" >> RELEASE_NOTES.md
+          echo "- **Author**: ${{ github.event.head_commit.author.name }}" >> RELEASE_NOTES.md
+          echo "- **Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> RELEASE_NOTES.md
+
+      - name: Commit and push changes
+        if: steps.version.outputs.version-changed == 'true'
+        run: |
+          git add package.json RELEASE_NOTES.md
+          git commit -m "chore(release): bump version to ${{ steps.version.outputs.new-version }} [skip ci]"
+          git tag "v${{ steps.version.outputs.new-version }}"
+          git push origin main --follow-tags
+
+      - name: Trigger release workflow
+        if: steps.version.outputs.version-changed == 'true'
+        run: |
+          echo "Version bumped to ${{ steps.version.outputs.new-version }}"
+          echo "Release workflow will be triggered by the new tag"
