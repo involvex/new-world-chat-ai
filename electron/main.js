@@ -2,6 +2,7 @@ const electron = require('electron');
 const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, shell, clipboard, desktopCapturer, screen } = electron;
 const { join } = require('path');
 const fs = require('fs');
+const { exec } = require('child_process'); // Import exec for tasklist
 
 // Import enhanced screenshot manager
 const ScreenshotManager = require('./screenshot-fix');
@@ -94,9 +95,12 @@ const defaultConfig = {
 // Load or create configuration
 function loadConfig() {
   try {
+    console.log(`Loading config from: ${configPath}`); // Log config path
     if (fs.existsSync(configPath)) {
       const configData = fs.readFileSync(configPath, 'utf8');
         return { ...defaultConfig, ...JSON.parse(configData) };
+    } else {
+      console.log('Config file not found, using default config.'); // Log if not found
     }
   } catch (error) {
     console.error('Error loading config:', error);
@@ -107,7 +111,9 @@ function loadConfig() {
 // Save configuration
 function saveConfig(config) {
   try {
+    console.log(`Saving config to: ${configPath}`); // Log config path
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    console.log('Config saved successfully.');
   } catch (error) {
     console.error('Error saving config:', error);
   }
@@ -116,9 +122,12 @@ function saveConfig(config) {
 // Load or create message history
 function loadMessageHistory() {
   try {
+    console.log(`Loading message history from: ${messageHistoryPath}`); // Log history path
     if (fs.existsSync(messageHistoryPath)) {
       const historyData = fs.readFileSync(messageHistoryPath, 'utf8');
       return JSON.parse(historyData);
+    } else {
+      console.log('Message history file not found, starting fresh.'); // Log if not found
     }
   } catch (error) {
     console.error('Error loading message history:', error);
@@ -129,7 +138,9 @@ function loadMessageHistory() {
 // Save message history
 function saveMessageHistory(history) {
   try {
+    console.log(`Saving message history to: ${messageHistoryPath}`); // Log history path
     fs.writeFileSync(messageHistoryPath, JSON.stringify(history, null, 2));
+    console.log('Message history saved successfully.');
   } catch (error) {
     console.error('Error saving message history:', error);
   }
@@ -201,7 +212,9 @@ async function captureScreenshot() {
     console.error('Legacy screenshot method failed:', error);
     throw error;
   }
+  }
 }
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
@@ -221,12 +234,75 @@ function createWindow() {
     autoHideMenuBar: true,
   });
 
+
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
   } else {
     const indexPath = join(__dirname, '../dist/index.html');
-    mainWindow.loadFile(indexPath);
+    console.log(`Attempting to load production index.html from: ${indexPath}`); // Log the path
+    fs.access(indexPath, fs.constants.F_OK, (err) => {
+      if (err) {
+        const errorMsg = `FATAL: index.html not found at ${indexPath}`;
+        console.error(errorMsg);
+        try {
+          dialog.showErrorBox('Startup Error', `${errorMsg}\n\nThe app cannot start. Please ensure the build process completed and dist/index.html exists.`);
+        } catch (dialogErr) {
+          // If dialog fails, log to file
+          try {
+            fs.writeFileSync(join(app.getPath('userData'), 'startup-error.log'), `${errorMsg}\n${dialogErr && dialogErr.stack ? dialogErr.stack : ''}`);
+          } catch (logErr) {}
+        }
+        app.quit();
+        return;
+      }
+
+      // Add check for file size
+      try {
+        const stats = fs.statSync(indexPath);
+        if (stats.size === 0) {
+          const errorMsg = `FATAL: index.html found but is empty at ${indexPath}`;
+          console.error(errorMsg);
+          try {
+            dialog.showErrorBox('Startup Error', `${errorMsg}\n\nThe app cannot start. The index.html file is empty.`);
+          } catch (dialogErr) {
+            // If dialog fails, log to file
+            try {
+              fs.writeFileSync(join(app.getPath('userData'), 'startup-error.log'), `${errorMsg}\n${dialogErr && dialogErr.stack ? dialogErr.stack : ''}`);
+            } catch (logErr) {}
+          }
+          app.quit();
+          return;
+        }
+        console.log(`index.html found and is not empty (${stats.size} bytes). Attempting to load.`); // Log success
+      } catch (statErr) {
+        const errorMsg = `FATAL: Could not get stats for index.html at ${indexPath}: ${statErr.message}`;
+        console.error(errorMsg);
+        try {
+          dialog.showErrorBox('Startup Error', `${errorMsg}\n\nThe app cannot start. Could not verify index.html.`);
+        } catch (dialogErr) {
+          try {
+            fs.writeFileSync(join(app.getPath('userData'), 'startup-error.log'), `${errorMsg}\n${dialogErr && dialogErr.stack ? dialogErr.stack : ''}`);
+          } catch (logErr) {}
+        }
+        app.quit();
+        return;
+      }
+
+
+      mainWindow.loadFile(indexPath).catch(loadErr => {
+        const errorMsg = `FATAL: Failed to load index.html: ${loadErr && loadErr.stack ? loadErr.stack : loadErr}`;
+        console.error(errorMsg);
+        try {
+          dialog.showErrorBox('Startup Error', `${errorMsg}\n\nThe app cannot start. Please ensure the build process completed and dist/index.html exists.`);
+        } catch (dialogErr) {
+          try {
+            fs.writeFileSync(join(app.getPath('userData'), 'startup-error.log'), `${errorMsg}\n${dialogErr && dialogErr.stack ? dialogErr.stack : ''}`);
+          } catch (logErr) {}
+        }
+        app.quit();
+      });
+    });
   }
 
   // Handle window close to minimize to tray
@@ -258,115 +334,65 @@ function createSettingsWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: join(__dirname, 'preload.js'),
+      preload: join(__dirname, 'preload.js'), // Assuming preload.js is needed for settings window too
+      webSecurity: true,
+      allowRunningInsecureContent: false,
     },
+    titleBarStyle: 'default',
+    autoHideMenuBar: true, // Or false, depending on desired settings window behavior
   });
 
-  // Load settings page
-  const settingsContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Settings - New World Chat AI</title>
-      <style>
-        body { 
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-          margin: 0; 
-          padding: 20px; 
-          background: #1f2937; 
-          color: #f3f4f6;
+  if (isDev) {
+    // Load from dev server in development
+    settingsWindow.loadURL('http://localhost:5173/settings.html').catch(loadErr => {
+      console.error('Failed to load settings.html from dev server:', loadErr);
+      dialog.showErrorBox('Settings Window Error', `Failed to load settings page from dev server: ${loadErr.message}`);
+      settingsWindow.close(); // Close the window if loading fails
+    });
+    // Optionally open dev tools for settings window in dev
+    // settingsWindow.webContents.openDevTools();
+  } else {
+    // Load from dist in production
+    const settingsPath = join(__dirname, '../dist/settings.html');
+    console.log(`Attempting to load production settings.html from: ${settingsPath}`);
+
+    fs.access(settingsPath, fs.constants.F_OK, (err) => {
+      if (err) {
+        const errorMsg = `FATAL: settings.html not found at ${settingsPath}`;
+        console.error(errorMsg);
+        dialog.showErrorBox('Settings Window Error', `${errorMsg}\n\nThe settings page cannot load.`);
+        settingsWindow.close(); // Close the window if file not found
+        return;
+      }
+
+      // Add check for file size
+      try {
+        const stats = fs.statSync(settingsPath);
+        if (stats.size === 0) {
+          const errorMsg = `FATAL: settings.html found but is empty at ${settingsPath}`;
+          console.error(errorMsg);
+          dialog.showErrorBox('Settings Window Error', `${errorMsg}\n\nThe settings page is empty.`);
+          settingsWindow.close(); // Close the window if file is empty
+          return;
         }
-        .container { max-width: 500px; margin: 0 auto; }
-        h1 { color: #06b6d4; text-align: center; margin-bottom: 30px; }
-        .section { margin-bottom: 30px; }
-        .section h2 { color: #3b82f6; border-bottom: 2px solid #374151; padding-bottom: 10px; }
-        .hotkey-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 500; }
-        input, select, textarea { 
-          width: 100%; 
-          padding: 8px 12px; 
-          border: 1px solid #4b5563; 
-          border-radius: 6px; 
-          background: #374151; 
-          color: #f3f4f6;
-          box-sizing: border-box;
-        }
-        textarea { height: 100px; resize: vertical; }
-        button { 
-          background: #06b6d4; 
-          color: white; 
-          border: none; 
-          padding: 10px 20px; 
-          border-radius: 6px; 
-          cursor: pointer; 
-          margin-right: 10px;
-        }
-        button:hover { background: #0891b2; }
-        button.secondary { background: #6b7280; }
-        button.secondary:hover { background: #4b5563; }
-        .buttons { text-align: center; margin-top: 30px; }
-        .prompt-item { border: 1px solid #4b5563; border-radius: 6px; padding: 15px; margin-bottom: 10px; }
-        .prompt-header { display: flex; justify-content: between; align-items: center; margin-bottom: 10px; }
-        .prompt-name { font-weight: bold; color: #06b6d4; }
-        .prompt-actions { margin-left: auto; }
-        .checkbox { width: auto; margin-right: 10px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>⚙️ Settings</h1>
-        
-        <div class="section">
-          <h2>🔥 Hotkeys</h2>
-          <div class="hotkey-group">
-            <label>Show/Hide App:</label>
-            <input type="text" id="hotkey-showHide" placeholder="CommandOrControl+Shift+N">
-          </div>
-          <div class="hotkey-group">
-            <label>Generate Messages:</label>
-            <input type="text" id="hotkey-generate" placeholder="CommandOrControl+Enter">
-          </div>
-          <div class="hotkey-group">
-            <label>Generate Funny Messages:</label>
-            <input type="text" id="hotkey-generateFunny" placeholder="CommandOrControl+Shift+Enter">
-          </div>
-          <div class="hotkey-group">
-            <label>New Image:</label>
-            <input type="text" id="hotkey-newImage" placeholder="CommandOrControl+N">
-          </div>
-        </div>
+        console.log(`settings.html found and is not empty (${stats.size} bytes). Attempting to load.`);
+      } catch (statErr) {
+        const errorMsg = `FATAL: Could not get stats for settings.html at ${settingsPath}: ${statErr.message}`;
+        console.error(errorMsg);
+        dialog.showErrorBox('Settings Window Error', `${errorMsg}\n\nCould not verify settings.html.`);
+        settingsWindow.close(); // Close the window if stat fails
+        return;
+      }
 
-        <div class="section">
-          <h2>💬 Custom Prompts</h2>
-          <div id="prompt-list"></div>
-          <button onclick="addNewPrompt()">Add New Prompt</button>
-        </div>
+      settingsWindow.loadFile(settingsPath).catch(loadErr => {
+        const errorMsg = `FATAL: Failed to load settings.html: ${loadErr && loadErr.stack ? loadErr.stack : loadErr}`;
+        console.error(errorMsg);
+        dialog.showErrorBox('Settings Window Error', `${errorMsg}\n\nThe settings page cannot load.`);
+        settingsWindow.close(); // Close the window if loading fails
+      });
+    });
+  }
 
-        <div class="section">
-          <h2>🔧 App Settings</h2>
-          <label>
-            <input type="checkbox" id="startMinimized" class="checkbox">
-            Start minimized to system tray
-          </label>
-          <br><br>
-          <label>
-            <input type="checkbox" id="showInTaskbar" class="checkbox">
-            Show in taskbar
-          </label>
-        </div>
-
-        <div class="buttons">
-          <button onclick="saveSettings()">Save Settings</button>
-          <button class="secondary" onclick="resetSettings()">Reset to Default</button>
-          <button class="secondary" onclick="closeSettings()">Cancel</button>
-        </div>
-      </div>
-      <script src="settings.js"></script>
-    </body>
-    </html>
-  `;
-
-  settingsWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(settingsContent));
   settingsWindow.once('ready-to-show', () => {
     settingsWindow.show();
   });
@@ -380,16 +406,23 @@ function createTray() {
   try {
     // Create tray icon - handle both dev and production paths
     let trayIconPath = join(__dirname, '../build/icon.png');
+    console.log('Checking tray icon path 1:', trayIconPath); // Log path 1
     
     // If the icon doesn't exist at the default path, try the production path
     if (!fs.existsSync(trayIconPath)) {
-      trayIconPath = join(__dirname, '../../build/icon.png');
+      console.log('Tray icon not found at path 1.'); // Log failure for path 1
+      // This path seems incorrect for standard build, let's log it but rely on the first one
+      trayIconPath = join(__dirname, '../../build/icon.png'); 
+      console.log('Checking tray icon path 2 (likely incorrect):', trayIconPath); // Log path 2
+    } else {
+      console.log('Tray icon found at path 1.'); // Log success for path 1
     }
     
     console.log('Creating tray with icon:', trayIconPath);
     
     if (!fs.existsSync(trayIconPath)) {
       console.error('Tray icon file not found at any expected location');
+      // Optionally show a dialog here or use a default icon
       return;
     }
     
@@ -690,6 +723,7 @@ ipcMain.handle('paste-to-new-world', async (event, message) => {
               console.log('Step 3: Sending message with Enter key...');
               robot.keyTap('enter'); // Send message
               
+
               // Restore original clipboard
               clipboard.writeText(originalClipboard);
               console.log('Clipboard restored, automation complete');
@@ -935,6 +969,7 @@ ipcMain.handle('get-monitor-info', async () => {
   }
 });
 
+
 // Test screenshot capture with specific monitor
 ipcMain.handle('test-monitor-screenshot', async (event, sourceId) => {
   try {
@@ -1008,6 +1043,10 @@ function logMonitorSetup() {
 
 app.whenReady().then(async () => {
   console.log('=== ELECTRON APP READY ===');
+  console.log(`App path: ${app.getAppPath()}`); // Log app path
+  console.log(`__dirname: ${__dirname}`); // Log __dirname
+  console.log(`process.resourcesPath: ${process.resourcesPath}`); // Log resources path
+  console.log(`User Data path: ${app.getPath('userData')}`); // Log user data path
   
   // Log monitor setup for diagnostics
   logMonitorSetup();
@@ -1384,14 +1423,14 @@ ipcMain.handle('test-full-resolution-capture', async () => {
 ipcMain.handle('capture-display-screenshot', async (event, displayId) => {
   try {
     console.log('Capturing screenshot for display:', displayId);
-    
+
     if (!screenshotManager) {
       screenshotManager = new ScreenshotManager();
       await screenshotManager.initialize();
     }
-    
+
     const dataUrl = await screenshotManager.captureScreenshot({ displayId });
-    
+
     return {
       success: true,
       dataUrl,
@@ -1403,7 +1442,6 @@ ipcMain.handle('capture-display-screenshot', async (event, displayId) => {
     return { success: false, error: error.message, displayId };
   }
 });
-}
 
 
 
