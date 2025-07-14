@@ -5,8 +5,8 @@ import type { ApiResponse } from '../types';
 let aiInstance: GoogleGenAI | null = null;
 let currentApiKey: string | null = null;
 
-// Default API key (yours)
-const DEFAULT_API_KEY = 'AIzaSyDYoJe6nXCpQI_xNpq9xQjK5fBxYUKqR0Y'; // Replace with your actual API key
+// No default API key for security - users must provide their own
+const DEFAULT_API_KEY = ''; // Users must configure their own API key
 
 const getAIInstance = async (customApiKey?: string): Promise<GoogleGenAI> => {
   let apiKeyToUse = customApiKey;
@@ -28,10 +28,14 @@ const getAIInstance = async (customApiKey?: string): Promise<GoogleGenAI> => {
     apiKeyToUse = process.env.API_KEY;
   }
 
-  // Fallback to default API key
+  // Fallback to default API key (empty - user must configure)
   if (!apiKeyToUse) {
-    apiKeyToUse = DEFAULT_API_KEY;
-    console.log('Using default API key (shared with rate limits)');
+    throw new Error(
+      'No Gemini API key configured. Please:\n' +
+      '1. Get a free API key from https://aistudio.google.com/app/apikey\n' +
+      '2. Configure it in the app settings\n' +
+      '3. Or set the GEMINI_API_KEY environment variable'
+    );
   }
 
   // Recreate instance if API key changed

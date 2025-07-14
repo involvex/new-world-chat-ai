@@ -3,6 +3,13 @@ const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, shell, 
 const { join } = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
+const { default: installExtension, REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } = require('electron-devtools-installer');
+
+// Import enhanced screenshot manager
+const ScreenshotManager = require('./screenshot-fix');
+
+// Initialize enhanced screenshot manager
+let screenshotManager;
 
 // Handle robotjs with error handling for production builds
 let robot;
@@ -132,50 +139,84 @@ function saveMessageHistory(history) {
 
 let config = loadConfig();
 
-// Screenshot functionality
+// Enhanced screenshot functionality with robust monitor detection
 async function captureScreenshot() {
   try {
-    console.log('Starting screenshot capture...');
-    
-    // Get all displays
-    const displays = screen.getAllDisplays();
-    const primaryDisplay = screen.getPrimaryDisplay();
-    
-    console.log('Primary display size:', primaryDisplay.size);
-    
-    // Get desktop capturer sources
-    const sources = await desktopCapturer.getSources({
-      types: ['screen'],
-      thumbnailSize: {
-        width: primaryDisplay.size.width,
-        height: primaryDisplay.size.height
+    // Initialize screenshot manager if not already done
+    if (!screenshotManager) {
+      console.log('Initializing enhanced screenshot manager...');
+      screenshotManager = new ScreenshotManager();
+      const initialized = await screenshotManager.initialize();
+      if (!initialized) {
+        throw new Error('Failed to initialize enhanced screenshot manager');
       }
-    });
-
-    console.log('Desktop capturer sources found:', sources.length);
-
-    if (sources.length === 0) {
-      throw new Error('No screen sources available');
     }
-
-    // Use the first screen source (primary display)
-    const source = sources[0];
-    const screenshot = source.thumbnail;
     
-    console.log('Screenshot captured, size:', screenshot.getSize());
+    // Capture screenshot using enhanced manager
+    const dataUrl = await screenshotManager.captureScreenshot();
+    return dataUrl;
     
-    // Convert to base64 data URL
-    const screenshotDataUrl = screenshot.toDataURL();
-    
-    console.log('Screenshot data URL created, length:', screenshotDataUrl.length);
-    
-    return screenshotDataUrl;
   } catch (error) {
-    console.error('Error capturing screenshot:', error);
-    throw error;
+    console.error('Enhanced screenshot capture failed, falling back to legacy method:', error);
+    
+    // Fallback to legacy screenshot method
+    try {
+      return await legacyCaptureScreenshot();
+    } catch (legacyError) {
+      console.error('Legacy screenshot method also failed:', legacyError);
+      throw new Error(`All screenshot methods failed. Enhanced: ${error.message}, Legacy: ${legacyError.message}`);
+    }
   }
 }
 
+// Legacy screenshot method as fallback
+async function legacyCaptureScreenshot() {
+  console.log('Using legacy screenshot capture...');
+  
+  try {
+    const displays = screen.getAllDisplays();
+    const primaryDisplay = screen.getPrimaryDisplay();
+    
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: { 
+        width: Math.max(1280, primaryDisplay.size.width), 
+        height: Math.max(720, primaryDisplay.size.height) 
+      },
+      fetchWindowIcons: false
+    });
+
+    if (sources.length === 0) {
+      throw new Error('No screen sources available from desktopCapturer');
+    }
+
+    // Simple source selection for legacy method
+    let targetSource = sources[0];
+    
+    if (sources.length > 1) {
+      // Try to find primary display source
+      const primarySource = sources.find(source => {
+        const sourceDisplayId = parseInt(source.display_id);
+        return sourceDisplayId === primaryDisplay.id;
+      });
+      
+      if (primarySource) {
+        targetSource = primarySource;
+      }
+    }
+    
+    const screenshot = targetSource.thumbnail;
+    if (screenshot.isEmpty()) {
+      throw new Error('Captured screenshot is empty');
+    }
+    
+    return screenshot.toDataURL();
+    
+  } catch (error) {
+    console.error('Legacy screenshot method failed:', error);
+    throw error;
+  }
+}
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
@@ -868,10 +909,160 @@ ipcMain.handle('test-robotjs', async () => {
   }
 });
 
-app.whenReady().then(() => {
+// Monitor diagnostics and information
+ipcMain.handle('get-monitor-info', async () => {
+  try {
+    const displays = screen.getAllDisplays();
+    const primaryDisplay = screen.getPrimaryDisplay();
+    
+    // Get desktop capturer sources for comparison
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: { width: 150, height: 150 },
+      fetchWindowIcons: false
+    });
+    
+    return {
+      success: true,
+      displays: displays.map(display => ({
+        id: display.id,
+        bounds: display.bounds,
+        workArea: display.workArea,
+        size: display.size,
+        scaleFactor: display.scaleFactor,
+        rotation: display.rotation,
+        colorDepth: display.colorDepth,
+        colorSpace: display.colorSpace,
+        isPrimary: display.id === primaryDisplay.id,
+        internal: display.internal || false
+      })),
+      primaryDisplayId: primaryDisplay.id,
+      sources: sources.map(source => ({
+        id: source.id,
+        name: source.name,
+        display_id: source.display_id,
+        thumbnailSize: source.thumbnail ? source.thumbnail.getSize() : null
+      }))
+    };
+  } catch (error) {
+    console.error('Failed to get monitor info:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Test screenshot capture with specific monitor
+ipcMain.handle('test-monitor-screenshot', async (event, sourceId) => {
+  try {
+    console.log('Testing screenshot for source ID:', sourceId);
+    
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: { width: 300, height: 200 },
+      fetchWindowIcons: false
+    });
+    
+    const targetSource = sources.find(source => source.id === sourceId);
+    if (!targetSource) {
+      throw new Error(`Source with ID ${sourceId} not found`);
+    }
+    
+    const screenshot = targetSource.thumbnail;
+    const screenshotDataUrl = screenshot.toDataURL();
+    
+    return {
+      success: true,
+      dataUrl: screenshotDataUrl,
+      source: {
+        id: targetSource.id,
+        name: targetSource.name,
+        display_id: targetSource.display_id
+      }
+    };
+  } catch (error) {
+    console.error('Test monitor screenshot failed:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Enhanced HDR and monitor compatibility settings
+console.log('=== CONFIGURING ELECTRON FOR MONITOR COMPATIBILITY ===');
+app.commandLine.appendSwitch('disable-hdr');
+app.commandLine.appendSwitch('disable-direct-composition');
+app.commandLine.appendSwitch('disable-gpu-sandbox');
+app.commandLine.appendSwitch('force-color-profile', 'srgb');
+app.commandLine.appendSwitch('disable-features', 'VizDisplayCompositor');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+
+// Monitor detection diagnostics
+function logMonitorSetup() {
+  try {
+    const displays = screen.getAllDisplays();
+    const primary = screen.getPrimaryDisplay();
+    
+    console.log('=== MONITOR SETUP DETECTED ===');
+    console.log(`Total displays: ${displays.length}`);
+    console.log(`Primary display: ${primary.id} (${primary.size.width}x${primary.size.height})`);
+    
+    displays.forEach((display, index) => {
+      console.log(`Monitor ${index + 1}:`, {
+        id: display.id,
+        resolution: `${display.size.width}x${display.size.height}`,
+        position: `(${display.bounds.x}, ${display.bounds.y})`,
+        scaleFactor: display.scaleFactor,
+        isPrimary: display.id === primary.id,
+        rotation: display.rotation,
+        colorDepth: display.colorDepth
+      });
+    });
+  } catch (error) {
+    console.error('Failed to log monitor setup:', error);
+  }
+}
+
+app.whenReady().then(async () => {
+  console.log('=== ELECTRON APP READY ===');
+  
+  // Log monitor setup for diagnostics
+  logMonitorSetup();
+  
+  // Initialize enhanced screenshot manager
+  try {
+    console.log('Initializing enhanced screenshot manager on startup...');
+    screenshotManager = new ScreenshotManager();
+    const initialized = await screenshotManager.initialize();
+    if (initialized) {
+      console.log('✅ Enhanced screenshot manager initialized successfully');
+    } else {
+      console.warn('⚠️ Enhanced screenshot manager initialization failed, will use fallback methods');
+    }
+  } catch (error) {
+    console.error('Screenshot manager initialization error:', error);
+    console.warn('Will use fallback screenshot methods when needed');
+  }
+  
   createWindow();
   createTray();
   registerGlobalShortcuts();
+  
+  // Install devtools extensions in development mode
+  if (isDev) {
+    try {
+      console.log('Installing devtools extensions...');
+      
+      // Install React Developer Tools
+      const reactDevToolsName = await installExtension(REACT_DEVELOPER_TOOLS);
+      console.log(`Added Extension: ${reactDevToolsName}`);
+      
+      // Install Redux DevTools
+      const reduxDevToolsName = await installExtension(REDUX_DEVTOOLS);
+      console.log(`Added Extension: ${reduxDevToolsName}`);
+      
+    } catch (err) {
+      console.log('An error occurred installing devtools extensions:', err);
+    }
+  }
 });
 
 app.on('window-all-closed', () => {
@@ -892,3 +1083,394 @@ app.on('activate', () => {
 app.on('will-quit', () => {
   globalShortcut.unregisterAll();
 });
+
+// Enhanced screenshot diagnostics
+ipcMain.handle('get-screenshot-diagnostics', async () => {
+  try {
+    if (!screenshotManager) {
+      screenshotManager = new ScreenshotManager();
+      await screenshotManager.initialize();
+    }
+    
+    const diagnostics = screenshotManager.getDiagnostics();
+    return { success: true, diagnostics };
+  } catch (error) {
+    console.error('Failed to get screenshot diagnostics:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Test specific screenshot source
+ipcMain.handle('test-screenshot-source', async (event, sourceId) => {
+  try {
+    if (!screenshotManager) {
+      screenshotManager = new ScreenshotManager();
+      await screenshotManager.initialize();
+    }
+    
+    const result = await screenshotManager.testCapture(sourceId);
+    return result;
+  } catch (error) {
+    console.error('Failed to test screenshot source:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Reinitialize screenshot manager
+ipcMain.handle('reinitialize-screenshot-manager', async () => {
+  try {
+    console.log('Reinitializing screenshot manager...');
+    screenshotManager = new ScreenshotManager();
+    const initialized = await screenshotManager.initialize();
+    
+    return { 
+      success: initialized, 
+      message: initialized ? 'Screenshot manager reinitialized successfully' : 'Failed to reinitialize screenshot manager'
+    };
+  } catch (error) {
+    console.error('Failed to reinitialize screenshot manager:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Add specific IPC handler for manual monitor selection
+ipcMain.handle('force-monitor-selection', async (event, displayId) => {
+  try {
+    console.log('Forcing monitor selection for display ID:', displayId);
+    
+    // Get all available sources
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: { width: 300, height: 200 },
+      fetchWindowIcons: false
+    });
+    
+    // Find source matching the requested display
+    const targetSource = sources.find(source => {
+      const sourceDisplayId = parseInt(source.display_id);
+      return sourceDisplayId === displayId;
+    });
+    
+    if (!targetSource) {
+      // If no exact match, look for "entire screen" source that might capture all displays
+      const entireScreenSource = sources.find(source =>
+        /entire|whole|all|complete|gesamter/i.test(source.name)
+      );
+      
+      if (entireScreenSource) {
+        console.log('Using entire screen source for display', displayId);
+        return {
+          success: true,
+          source: entireScreenSource,
+          note: 'Using entire screen capture (covers all displays)'
+        };
+      }
+      
+      return {
+        success: false,
+        error: `No source found for display ${displayId}`,
+        availableSources: sources.map(s => ({
+          id: s.id,
+          name: s.name,
+          display_id: s.display_id
+        }))
+      };
+    }
+    
+    console.log('Found source for display', displayId, ':', targetSource.name);
+    return {
+      success: true,
+      source: {
+        id: targetSource.id,
+        name: targetSource.name,
+        display_id: targetSource.display_id
+      }
+    };
+    
+  } catch (error) {
+    console.error('Failed to force monitor selection:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Add handler to get detailed monitor/source mapping
+ipcMain.handle('get-monitor-source-mapping', async () => {
+  try {
+    const displays = screen.getAllDisplays();
+    const primaryDisplay = screen.getPrimaryDisplay();
+    
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: { width: 150, height: 150 },
+      fetchWindowIcons: false
+    });
+    
+    // Create mapping between displays and sources
+    const mapping = displays.map(display => {
+      const matchingSources = sources.filter(source => {
+        const sourceDisplayId = parseInt(source.display_id);
+        return sourceDisplayId === display.id;
+      });
+      
+      return {
+        display: {
+          id: display.id,
+          bounds: display.bounds,
+          size: display.size,
+          isPrimary: display.id === primaryDisplay.id,
+          scaleFactor: display.scaleFactor,
+          colorDepth: display.colorDepth,
+          colorSpace: display.colorSpace
+        },
+        sources: matchingSources.map(source => ({
+          id: source.id,
+          name: source.name,
+          display_id: source.display_id
+        })),
+        hasDirectSource: matchingSources.length > 0
+      };
+    });
+    
+    // Also include sources that don't match any specific display (like "Entire screen")
+    const unmatchedSources = sources.filter(source => {
+      const sourceDisplayId = parseInt(source.display_id);
+      return !displays.some(display => display.id === sourceDisplayId);
+    });
+    
+    return {
+      success: true,
+      mapping,
+      unmatchedSources: unmatchedSources.map(source => ({
+        id: source.id,
+        name: source.name,
+        display_id: source.display_id
+      })),
+      totalDisplays: displays.length,
+      totalSources: sources.length,
+      primaryDisplayId: primaryDisplay.id
+    };
+    
+  } catch (error) {
+    console.error('Failed to get monitor-source mapping:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Enhanced screenshot diagnostics with multiple detection methods
+ipcMain.handle('test-comprehensive-source-detection', async () => {
+  try {
+    console.log('=== COMPREHENSIVE SOURCE DETECTION TEST ===');
+    
+    const displays = screen.getAllDisplays();
+    const results = {
+      displays: displays.length,
+      displayInfo: displays.map(d => ({ id: d.id, bounds: d.bounds, isPrimary: d.id === screen.getPrimaryDisplay().id })),
+      detectionResults: []
+    };
+
+    // Method 1: Standard
+    try {
+      const sources1 = await desktopCapturer.getSources({
+        types: ['screen'],
+        thumbnailSize: { width: 300, height: 200 },
+        fetchWindowIcons: false
+      });
+      results.detectionResults.push({
+        method: 'Standard (300x200)',
+        sourceCount: sources1.length,
+        sources: sources1.map(s => ({ id: s.id, name: s.name, display_id: s.display_id }))
+      });
+    } catch (error) {
+      results.detectionResults.push({ method: 'Standard', error: error.message });
+    }
+
+    // Method 2: High resolution
+    try {
+      const sources2 = await desktopCapturer.getSources({
+        types: ['screen'],
+        thumbnailSize: { width: 1920, height: 1080 },
+        fetchWindowIcons: false
+      });
+      results.detectionResults.push({
+        method: 'High-res (1920x1080)',
+        sourceCount: sources2.length,
+        sources: sources2.map(s => ({ id: s.id, name: s.name, display_id: s.display_id }))
+      });
+    } catch (error) {
+      results.detectionResults.push({ method: 'High-res', error: error.message });
+    }
+
+    // Method 3: Very small thumbnails
+    try {
+      const sources3 = await desktopCapturer.getSources({
+        types: ['screen'],
+        thumbnailSize: { width: 64, height: 64 },
+        fetchWindowIcons: false
+      });
+      results.detectionResults.push({
+        method: 'Small (64x64)',
+        sourceCount: sources3.length,
+        sources: sources3.map(s => ({ id: s.id, name: s.name, display_id: s.display_id }))
+      });
+    } catch (error) {
+      results.detectionResults.push({ method: 'Small', error: error.message });
+    }
+
+    // Method 4: Mixed types
+    try {
+      const sources4 = await desktopCapturer.getSources({
+        types: ['screen', 'window'],
+        thumbnailSize: { width: 300, height: 200 },
+        fetchWindowIcons: false
+      });
+      const screenOnly = sources4.filter(s => s.id.startsWith('screen:'));
+      results.detectionResults.push({
+        method: 'Mixed types (screen only)',
+        sourceCount: screenOnly.length,
+        totalCount: sources4.length,
+        sources: screenOnly.map(s => ({ id: s.id, name: s.name, display_id: s.display_id }))
+      });
+    } catch (error) {
+      results.detectionResults.push({ method: 'Mixed types', error: error.message });
+    }
+
+    // Method 5: Zero thumbnail size (might get more sources)
+    try {
+      const sources5 = await desktopCapturer.getSources({
+        types: ['screen'],
+        thumbnailSize: { width: 0, height: 0 },
+        fetchWindowIcons: false
+      });
+      results.detectionResults.push({
+        method: 'No thumbnail (0x0)',
+        sourceCount: sources5.length,
+        sources: sources5.map(s => ({ id: s.id, name: s.name, display_id: s.display_id }))
+      });
+    } catch (error) {
+      results.detectionResults.push({ method: 'No thumbnail', error: error.message });
+    }
+
+    return { success: true, results };
+  } catch (error) {
+    console.error('Comprehensive source detection failed:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Test actual screenshot capture dimensions
+ipcMain.handle('test-full-resolution-capture', async () => {
+  try {
+    console.log('=== TESTING FULL RESOLUTION CAPTURE ===');
+    
+    const displays = screen.getAllDisplays();
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: { width: 4000, height: 2000 }, // Large size to get full resolution
+      fetchWindowIcons: false
+    });
+    
+    if (sources.length === 0) {
+      return { success: false, error: 'No sources available' };
+    }
+    
+    const source = sources[0];
+    const screenshot = source.thumbnail;
+    const size = screenshot.getSize();
+    
+    // Calculate expected dimensions for dual monitor setup
+    const totalWidth = displays.reduce((sum, display) => sum + display.size.width, 0);
+    const maxHeight = Math.max(...displays.map(display => display.size.height));
+    
+    console.log('Screenshot analysis:');
+    console.log('- Source name:', source.name);
+    console.log('- Actual screenshot size:', size);
+    console.log('- Display 1:', displays[0].size);
+    console.log('- Display 2:', displays[1] ? displays[1].size : 'N/A');
+    console.log('- Expected dual monitor size:', { width: totalWidth, height: maxHeight });
+    console.log('- Aspect ratio actual:', (size.width / size.height).toFixed(2));
+    console.log('- Aspect ratio expected dual:', (totalWidth / maxHeight).toFixed(2));
+    
+    const capturesBothMonitors = size.width >= totalWidth * 0.8; // Allow some scaling
+    
+    return {
+      success: true,
+      source: {
+        name: source.name,
+        display_id: source.display_id
+      },
+      actualSize: size,
+      expectedSize: { width: totalWidth, height: maxHeight },
+      displays: displays.map(d => ({ id: d.id, size: d.size, bounds: d.bounds })),
+      capturesBothMonitors,
+      aspectRatioActual: size.width / size.height,
+      aspectRatioExpected: totalWidth / maxHeight
+    };
+  } catch (error) {
+    console.error('Full resolution capture test failed:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Capture screenshot from specific display
+ipcMain.handle('capture-display-screenshot', async (event, displayId) => {
+  try {
+    console.log('Capturing screenshot for display:', displayId);
+    
+    if (!screenshotManager) {
+      screenshotManager = new ScreenshotManager();
+      await screenshotManager.initialize();
+    }
+    
+    const dataUrl = await screenshotManager.captureScreenshot({ displayId });
+    
+    return {
+      success: true,
+      dataUrl,
+      displayId,
+      message: `Screenshot captured for display ${displayId}`
+    };
+  } catch (error) {
+    console.error('Display-specific screenshot failed:', error);
+    return { success: false, error: error.message, displayId };
+  }
+});
+
+// Get all available sources including virtual ones
+ipcMain.handle('get-all-screenshot-sources', async () => {
+  try {
+    if (!screenshotManager) {
+      screenshotManager = new ScreenshotManager();
+      await screenshotManager.initialize();
+    }
+    
+    const allSources = screenshotManager.monitorDetector.getAllSources();
+    const displays = screen.getAllDisplays();
+    
+    return {
+      success: true,
+      sources: allSources.map(source => ({
+        id: source.id,
+        name: source.name,
+        display_id: source.display_id,
+        isVirtual: source.isVirtual || false,
+        targetDisplay: source.targetDisplay ? {
+          id: source.targetDisplay.id,
+          bounds: source.targetDisplay.bounds,
+          size: source.targetDisplay.size
+        } : null
+      })),
+      displays: displays.map(display => ({
+        id: display.id,
+        bounds: display.bounds,
+        size: display.size,
+        isPrimary: display.id === screen.getPrimaryDisplay().id
+      }))
+    };
+  } catch (error) {
+    console.error('Failed to get all screenshot sources:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+
+
