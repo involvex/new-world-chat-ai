@@ -2,8 +2,6 @@ const electron = require('electron');
 const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, shell, clipboard, desktopCapturer, screen } = electron;
 const { join } = require('path');
 const fs = require('fs');
-const { exec } = require('child_process');
-
 
 // Import enhanced screenshot manager
 const ScreenshotManager = require('./screenshot-fix');
@@ -44,7 +42,7 @@ try {
 }
 
 // __dirname is automatically available in CommonJS
-const isDev = process.env.NODE_ENV === 'development';
+const isDev = process.env.NODE_ENV === 'development'; // Ensure the environment is set correctly
 
 let mainWindow;
 let tray;
@@ -98,7 +96,7 @@ function loadConfig() {
   try {
     if (fs.existsSync(configPath)) {
       const configData = fs.readFileSync(configPath, 'utf8');
-      return { ...defaultConfig, ...JSON.parse(configData) };
+        return { ...defaultConfig, ...JSON.parse(configData) };
     }
   } catch (error) {
     console.error('Error loading config:', error);
@@ -1033,23 +1031,7 @@ app.whenReady().then(async () => {
   createTray();
   registerGlobalShortcuts();
   
-  // Install devtools extensions in development mode
-  if (isDev) {
-    try {
-      console.log('Installing devtools extensions...');
-      
-      // Install React Developer Tools
-      const reactDevToolsName = await installExtension(REACT_DEVELOPER_TOOLS);
-      console.log(`Added Extension: ${reactDevToolsName}`);
-      
-      // Install Redux DevTools
-      const reduxDevToolsName = await installExtension(REDUX_DEVTOOLS);
-      console.log(`Added Extension: ${reduxDevToolsName}`);
-      
-    } catch (err) {
-      console.log('An error occurred installing devtools extensions:', err);
-    }
-  }
+
 });
 
 app.on('window-all-closed', () => {
@@ -1421,43 +1403,8 @@ ipcMain.handle('capture-display-screenshot', async (event, displayId) => {
     return { success: false, error: error.message, displayId };
   }
 });
+}
 
-// Get all available sources including virtual ones
-ipcMain.handle('get-all-screenshot-sources', async () => {
-  try {
-    if (!screenshotManager) {
-      screenshotManager = new ScreenshotManager();
-      await screenshotManager.initialize();
-    }
-    
-    const allSources = screenshotManager.monitorDetector.getAllSources();
-    const displays = screen.getAllDisplays();
-    
-    return {
-      success: true,
-      sources: allSources.map(source => ({
-        id: source.id,
-        name: source.name,
-        display_id: source.display_id,
-        isVirtual: source.isVirtual || false,
-        targetDisplay: source.targetDisplay ? {
-          id: source.targetDisplay.id,
-          bounds: source.targetDisplay.bounds,
-          size: source.targetDisplay.size
-        } : null
-      })),
-      displays: displays.map(display => ({
-        id: display.id,
-        bounds: display.bounds,
-        size: display.size,
-        isPrimary: display.id === screen.getPrimaryDisplay().id
-      }))
-    };
-  } catch (error) {
-    console.error('Failed to get all screenshot sources:', error);
-    return { success: false, error: error.message };
-  }
-});
 
 
 
