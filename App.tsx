@@ -1037,7 +1037,7 @@ function App() {
           <div className="flex flex-col items-center justify-center space-y-2">
             {/* First line - Logo and Created by */}
             <div className="flex items-center gap-2">
-              <img src={window.electronAPI ? "./build/icon.png" : "./icon.png"} alt="New World Chat AI Logo" className="h-6 w-6 sm:h-8 sm:w-8" />
+              <img src={window.electronAPI ? "./build/icon.png" : "./icon.png"} alt="New World Chat AI Logo" className="h-6 w-6 sm:h-8 sm:w-8" onError={e => { e.currentTarget.src = './icon.png'; }} />
               <span>Created with ❤️ by</span>
               <span className="text-cyan-400 font-semibold">Ina Venox</span>
             </div>

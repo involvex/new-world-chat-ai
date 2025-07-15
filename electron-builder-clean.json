@@ -9,6 +9,7 @@
     "dist/**/*",
     "electron/**/*",
     "package.json",
+    "fokusnewworldscreenshot.ps1",
     "!node_modules/**/*",
     "!src/**/*",
     "!scripts/**/*",

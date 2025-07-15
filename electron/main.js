@@ -149,69 +149,85 @@ function saveMessageHistory(history) {
 let config = loadConfig();
 
 // Enhanced screenshot functionality with robust monitor detection
-async function captureScreenshot() {
-  try {
-    // Initialize screenshot manager if not already done
-    if (!screenshotManager) {
-      console.log('Initializing enhanced screenshot manager...');
-      screenshotManager = new ScreenshotManager();
-      const initialized = await screenshotManager.initialize();
-      if (!initialized) {
-        throw new Error('Failed to initialize enhanced screenshot manager');
-      }
-    }
-    
-    // Capture screenshot using enhanced manager
-    const dataUrl = await screenshotManager.captureScreenshot();
-    return dataUrl;
-    
-  } catch (error) {
-
-  console.log('Using legacy screenshot capture...');
-  
+// Electron fallback screenshot function
+async function electronScreenshotFallback() {
   try {
     const displays = screen.getAllDisplays();
     const primaryDisplay = screen.getPrimaryDisplay();
-    
     const sources = await desktopCapturer.getSources({
       types: ['screen'],
-      thumbnailSize: { 
-        width: Math.max(1280, primaryDisplay.size.width), 
-        height: Math.max(720, primaryDisplay.size.height) 
+      thumbnailSize: {
+        width: Math.max(1280, primaryDisplay.size.width),
+        height: Math.max(720, primaryDisplay.size.height)
       },
       fetchWindowIcons: false
     });
+    if (sources.length === 0) throw new Error('No screen sources available from desktopCapturer');
 
-    if (sources.length === 0) {
-      throw new Error('No screen sources available from desktopCapturer');
+    // Prefer 'entire screen' source if available
+    let targetSource = sources.find(source => /entire|whole|all|complete|gesamter/i.test(source.name));
+    if (!targetSource) {
+      // Fallback to primary display
+      targetSource = sources.find(source => parseInt(source.display_id) === primaryDisplay.id) || sources[0];
     }
 
-    // Simple source selection for legacy method
-    let targetSource = sources[0];
-    
-    if (sources.length > 1) {
-      // Try to find primary display source
-      const primarySource = sources.find(source => {
-        const sourceDisplayId = parseInt(source.display_id);
-        return sourceDisplayId === primaryDisplay.id;
-      });
-      
-      if (primarySource) {
-        targetSource = primarySource;
-      }
-    }
-    
     const screenshot = targetSource.thumbnail;
-    if (screenshot.isEmpty()) {
-      throw new Error('Captured screenshot is empty');
-    }
-    
+    if (screenshot.isEmpty()) throw new Error('Captured screenshot is empty');
     return screenshot.toDataURL();
-    
   } catch (error) {
-    console.error('Legacy screenshot method failed:', error);
+    console.error('Electron fallback screenshot failed:', error);
     throw error;
   }
+}
+async function captureScreenshot() {
+  // Windows: try to use fokusnewworldscreenshot.ps1 first
+  if (process.platform === 'win32') {
+    try {
+      const psScriptPath = join(__dirname, '../fokusnewworldscreenshot.ps1');
+      await new Promise((resolve, reject) => {
+        exec(`powershell -ExecutionPolicy Bypass -File "${psScriptPath}"`, { windowsHide: true }, (error, stdout, stderr) => {
+          if (error) {
+            console.error('PowerShell screenshot script failed:', error, stderr);
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+      });
+      const image = clipboard.readImage();
+      if (!image.isEmpty()) {
+        return image.toDataURL();
+      } else {
+        throw new Error('Clipboard does not contain an image after PowerShell screenshot');
+      }
+    } catch (err) {
+      console.warn('PowerShell screenshot fallback failed, using Electron fallback:', err);
+      // Use Electron fallback
+      try {
+        return await electronScreenshotFallback();
+      } catch (fallbackErr) {
+        console.error('Electron fallback also failed:', fallbackErr);
+        // Continue to enhanced manager below
+      }
+    }
+  }
+  // Fallback: use enhanced screenshot manager
+  try {
+    if (!screenshotManager) {
+      screenshotManager = new ScreenshotManager();
+      const initialized = await screenshotManager.initialize();
+      if (!initialized) throw new Error('Failed to initialize enhanced screenshot manager');
+    }
+    const dataUrl = await screenshotManager.captureScreenshot();
+    return dataUrl;
+  } catch (error) {
+    // Final fallback: Electron screenshot
+    try {
+      return await electronScreenshotFallback();
+    } catch (finalErr) {
+      console.error('All screenshot methods failed:', finalErr);
+      throw finalErr;
+    }
   }
 }
 
@@ -550,7 +566,29 @@ function registerGlobalShortcuts() {
   // Register screenshot shortcut
   globalShortcut.register(config.hotkeys.screenshot, async () => {
     console.log('Screenshot hotkey pressed!');
-    
+    // --- See code excerpt below for reference ---
+    // Excerpt from main.js, lines 569 to 593:
+    // console.log('Window exists, showing and focusing...');
+    //   if (!mainWindow.isVisible()) {
+    //     mainWindow.show();
+    //   }
+    //   mainWindow.focus();
+    //   // Small delay to ensure window is focused before taking screenshot
+    //   setTimeout(async () => {
+    //     try {
+    //       console.log('Taking screenshot...');
+    //       const screenshotDataUrl = await captureScreenshot();
+    //       console.log('Screenshot captured successfully, sending to renderer...');
+    //       // Send screenshot to renderer process
+    //       mainWindow.webContents.send('hotkey-screenshot-captured', screenshotDataUrl);
+    //       // Automatically trigger prompt generation with screenshot
+    //       mainWindow.webContents.send('auto-generate-prompts', screenshotDataUrl);
+    //     } catch (error) {
+    //       console.error('Screenshot capture failed:', error);
+    //       mainWindow.webContents.send('hotkey-screenshot-error', error.message);
+    //     }
+    //   }, 200);
+    // --- End excerpt ---
     try {
       // Show and focus the window first
       if (mainWindow) {
@@ -559,7 +597,6 @@ function registerGlobalShortcuts() {
           mainWindow.show();
         }
         mainWindow.focus();
-        
         // Small delay to ensure window is focused before taking screenshot
         setTimeout(async () => {
           try {
@@ -568,6 +605,8 @@ function registerGlobalShortcuts() {
             console.log('Screenshot captured successfully, sending to renderer...');
             // Send screenshot to renderer process
             mainWindow.webContents.send('hotkey-screenshot-captured', screenshotDataUrl);
+            // Automatically trigger prompt generation with screenshot
+            mainWindow.webContents.send('auto-generate-prompts', screenshotDataUrl);
           } catch (error) {
             console.error('Screenshot capture failed:', error);
             mainWindow.webContents.send('hotkey-screenshot-error', error.message);
@@ -583,6 +622,8 @@ function registerGlobalShortcuts() {
             const screenshotDataUrl = await captureScreenshot();
             console.log('Screenshot captured successfully, sending to renderer...');
             mainWindow.webContents.send('hotkey-screenshot-captured', screenshotDataUrl);
+            // Automatically trigger prompt generation with screenshot
+            mainWindow.webContents.send('auto-generate-prompts', screenshotDataUrl);
           } catch (error) {
             console.error('Screenshot capture failed:', error);
             mainWindow.webContents.send('hotkey-screenshot-error', error.message);
