@@ -17,8 +17,8 @@
   ],
   "compression": "normal",
   "nodeGypRebuild": false,
-  "buildDependenciesFromSource": false,
-  "npmRebuild": false,
+  "buildDependenciesFromSource": true,
+  "npmRebuild": true,
   "win": {
     "target": [
       {

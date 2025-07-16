@@ -2,7 +2,7 @@
   "name": "new-world-chat-ai",
   "description": "Generate Chatmessage for New World with Ai and Humor.",
   "private": false,
-  "version": "1.5.2",
+  "version": "1.5.4",
   "type": "module",
   "homepage": "https://involvex.github.io/new-world-chat-ai/",
   "author": {
@@ -92,7 +92,8 @@
       "!node_modules/**/*",
       "!src/**/*",
       "!scripts/**/*",
-      "!*.log"
+      "!*.log",
+      "build/icon.png"
     ],
     "extraResources": [
       {
@@ -105,7 +106,7 @@
     ],
     "compression": "normal",
     "nodeGypRebuild": false,
-    "buildDependenciesFromSource": false,
+    "buildDependenciesFromSource": true,
     "npmRebuild": false,
     "win": {
       "target": [

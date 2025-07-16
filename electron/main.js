@@ -183,7 +183,9 @@ async function captureScreenshot() {
   // Windows: try to use fokusnewworldscreenshot.ps1 first
   if (process.platform === 'win32') {
     try {
-      const psScriptPath = join(__dirname, '../fokusnewworldscreenshot.ps1');
+      const psScriptPath = isDev
+        ? join(__dirname, '../fokusnewworldscreenshot.ps1')
+        : join(process.resourcesPath, 'build/fokusnewworldscreenshot.ps1');
       await new Promise((resolve, reject) => {
         exec(`powershell -ExecutionPolicy Bypass -File "${psScriptPath}"`, { windowsHide: true }, (error, stdout, stderr) => {
           if (error) {
