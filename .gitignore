@@ -26,3 +26,4 @@ docs/
 .env*
 
 dist*/
+release/
