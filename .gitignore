@@ -27,3 +27,4 @@ docs/
 
 dist*/
 release/
+*.md
