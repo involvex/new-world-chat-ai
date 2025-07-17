@@ -102,6 +102,19 @@ jobs:
           echo "- **Author**: ${{ github.event.head_commit.author.name }}" >> RELEASE_NOTES.md
           echo "- **Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> RELEASE_NOTES.md
 
+      - name: Generate release notes with Gemini AI
+        if: steps.version.outputs.version-changed == 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq
+          COMMITS=$(git log -10 --pretty=format:"%s" | jq -R -s -c '.')
+          PROMPT="Write concise, user-friendly release notes for these commits: $COMMITS"
+          RESPONSE=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=$GEMINI_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"contents\":[{\"parts\":[{\"text\":\"$PROMPT\"}]}]}" )
+          echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text' > RELEASE_NOTES.md
+
       - name: Commit and push changes
         if: steps.version.outputs.version-changed == 'true'
         run: |
