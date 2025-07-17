@@ -1,39 +1,3 @@
-## Code Reference
-
-This project uses the following logic for screenshot and prompt generation:
-
-Excerpt from `electron/main.js`, lines 569 to 593:
-
-```
-console.log('Window exists, showing and focusing...');
-if (!mainWindow.isVisible()) {
-  mainWindow.show();
-}
-mainWindow.focus();
-// Small delay to ensure window is focused before taking screenshot
-setTimeout(async () => {
-  try {
-    console.log('Taking screenshot...');
-    const screenshotDataUrl = await captureScreenshot();
-    console.log('Screenshot captured successfully, sending to renderer...');
-    // Send screenshot to renderer process
-    mainWindow.webContents.send('hotkey-screenshot-captured', screenshotDataUrl);
-    // Automatically trigger prompt generation with screenshot
-    mainWindow.webContents.send('auto-generate-prompts', screenshotDataUrl);
-  } catch (error) {
-    console.error('Screenshot capture failed:', error);
-    mainWindow.webContents.send('hotkey-screenshot-error', error.message);
-  }
-}, 200);
-```
-
-See `electron/main.js` for full implementation details.
-
-## Version
-
-Current release: **v1.5.4**
-
-
 # 🎮 New World Chat AI
 
 <div align="center">
