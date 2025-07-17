@@ -84,7 +84,6 @@ const Header = memo<{
             </svg>
             <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-green-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
           </button>
-          
           <button
             onClick={onTakeScreenshot}
             className="group relative p-2 text-gray-400 hover:text-cyan-400 transition-all duration-300 hover:bg-gray-700/50 rounded-lg border border-gray-700/50 hover:border-cyan-500/50 hover:shadow-md hover:shadow-cyan-500/10 touch-manipulation"
@@ -96,31 +95,33 @@ const Header = memo<{
             </svg>
             <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-blue-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
           </button>
-          
-          <button
-            onClick={onOpenSettings}
-            className="group relative p-2 text-gray-400 hover:text-cyan-400 transition-all duration-300 hover:bg-gray-700/50 rounded-lg border border-gray-700/50 hover:border-cyan-500/50 hover:shadow-md hover:shadow-cyan-500/10 touch-manipulation"
-            title="Settings"
-          >
-            <svg className="w-5 h-5 transition-transform group-hover:scale-110 group-hover:rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-purple-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
-          </button>
-          
-          {/* Close button - only show in Electron app */}
-          {window.electronAPI && onCloseApp && (
-            <button
-              onClick={onCloseApp}
-              className="group relative p-2 text-gray-400 hover:text-red-400 transition-all duration-300 hover:bg-gray-700/50 rounded-lg border border-gray-700/50 hover:border-red-500/50 hover:shadow-md hover:shadow-red-500/10 touch-manipulation"
-              title="Close Application"
-            >
-              <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
-            </button>
+          {/* Hide settings button in web version */}
+          {window.electronAPI && (
+            <>
+              <button
+                onClick={onOpenSettings}
+                className="group relative p-2 text-gray-400 hover:text-cyan-400 transition-all duration-300 hover:bg-gray-700/50 rounded-lg border border-gray-700/50 hover:border-cyan-500/50 hover:shadow-md hover:shadow-cyan-500/10 touch-manipulation"
+                title="Settings"
+              >
+                <svg className="w-5 h-5 transition-transform group-hover:scale-110 group-hover:rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-purple-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
+              </button>
+              {onCloseApp && (
+                <button
+                  onClick={onCloseApp}
+                  className="group relative p-2 text-gray-400 hover:text-red-400 transition-all duration-300 hover:bg-gray-700/50 rounded-lg border border-gray-700/50 hover:border-red-500/50 hover:shadow-md hover:shadow-red-500/10 touch-manipulation"
+                  title="Close Application"
+                >
+                  <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity animate-pulse"></div>
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -820,6 +821,13 @@ function App() {
           onCloseApp={handleCloseApp}
         />
         <main className="flex-grow container mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8 flex flex-col items-center">
+          {/* Web version header for GitHub Pages */}
+          {!window.electronAPI && (
+            <div className="w-full max-w-6xl mx-auto mb-4 p-3 sm:p-4 bg-gradient-to-r from-cyan-700/20 to-purple-700/20 border border-cyan-400/30 rounded-lg text-center">
+              <h2 className="text-lg sm:text-xl font-bold text-cyan-300 mb-1">Get your own AI-powered chat generator!</h2>
+              <a href="https://github.com/involvex/new-world-chat-ai" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-purple-400 underline font-semibold">Visit the GitHub repo</a>
+            </div>
+          )}
           <div className="w-full max-w-6xl bg-gray-800/50 rounded-xl shadow-2xl p-3 sm:p-4 lg:p-6 border border-gray-700 hover-scale">
             
             {!screenshotUrl ? (

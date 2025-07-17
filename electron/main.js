@@ -697,9 +697,17 @@ ipcMain.handle('quit-app', () => {
 ipcMain.handle('take-screenshot', async () => {
   try {
     const screenshotDataUrl = await captureScreenshot();
+    // Send screenshot to renderer and trigger auto-generation, just like the hotkey
+    if (mainWindow) {
+      mainWindow.webContents.send('hotkey-screenshot-captured', screenshotDataUrl);
+      mainWindow.webContents.send('auto-generate-prompts', screenshotDataUrl);
+    }
     return { success: true, dataUrl: screenshotDataUrl };
   } catch (error) {
     console.error('Screenshot capture failed:', error);
+    if (mainWindow) {
+      mainWindow.webContents.send('hotkey-screenshot-error', error.message);
+    }
     return { success: false, error: error.message };
   }
 });
