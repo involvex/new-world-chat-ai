@@ -123,7 +123,7 @@ jobs:
           # Use jq to build the JSON payload safely
           jq -n --arg prompt "$PROMPT" \
             '{contents: [{parts: [{text: $prompt}]}]}' > payload.json
-          RESPONSE=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=$GEMINI_API_KEY" \
+          RESPONSE=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=$GEMINI_API_KEY" \
             -H "Content-Type: application/json" \
             -d @payload.json)
           echo "Gemini raw response:" >&2

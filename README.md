@@ -159,50 +159,28 @@ We love contributions! Here's how you can help:
 
 ---
 
+## 🚀 Automated Version & Release Notes
+
+This README is automatically updated to show the latest release version and release notes:
+
+- **Current Version:** (auto-updated from latest tag)
+- **Release Notes:** (auto-inserted from latest release)
+
+To update:
+- The GitHub Actions workflow fetches the latest tag and release notes after each release.
+- The README is patched with the new version and notes in the changelog section.
+
+---
+
 ## 📝 Changelog
 
-### Version 1.5.4 (Latest)
-- 🆕 PowerShell screenshot script now reliably bundled and executed in Electron builds
-- 🖼️ Robust screenshot fallback logic for Windows (PowerShell, Electron, enhanced manager)
-- 🛠️ Improved asset and resource handling for all platforms
-- ⌨️ Hotkey and auto-paste reliability improvements
-- 📋 Documentation and onboarding updates
-- 🐞 Bug fixes for asset path resolution, screenshot, and automation
-- 🧑‍💻 Enhanced error logging and troubleshooting
+<!-- AUTO-INSERTED VERSION AND RELEASE NOTES BELOW -->
+<!-- These lines are automatically updated by the release workflow -->
 
-### Version 1.5.1
-- All version numbers updated to 1.5.1 for consistency across app, build, and installer.
-- Windows installer and portable executable rebuilt and validated.
-- All files typechecked, built, and tested for production.
-- No known issues; RobotJS and all native modules confirmed working.
-- Security, onboarding, and workflow improvements from previous releases included.
+### Version: (auto)
+- (release notes auto-inserted here)
 
-### Version 1.3.0
-- Major stability and UI improvements
-- Fixed robotjs module loading crashes
-- Restored missing system tray icon
-- Fixed footer logo display
-- Icon path compatibility
-- Enhanced error handling and resource management
-
-### Version 1.1.2
-- Fixed robotjs native module compatibility issues
-- Enhanced auto-paste reliability with better error handling
-- Added comprehensive debugging and logging
-- Improved UI scaling and responsiveness
-- Updated system tray integration
-
-### Version 1.1.0
-- Added auto-paste to New World feature
-- Custom prompts system
-- Message history and management
-- Export and sharing capabilities
-
-### Version 1.0.0
-- Initial release
-- Screenshot capture and AI generation
-- Global hotkeys
-- Basic settings and configuration
+<!-- END AUTO-INSERT -->
 
 ---
 
