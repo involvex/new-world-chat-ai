@@ -113,7 +113,14 @@ jobs:
           RESPONSE=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=$GEMINI_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{\"contents\":[{\"parts\":[{\"text\":\"$PROMPT\"}]}]}" )
-          echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text' > RELEASE_NOTES.md
+          echo "Gemini raw response:" >&2
+          echo "$RESPONSE" >&2
+          NOTES=$(echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text')
+          if [ -z "$NOTES" ] || [ "$NOTES" = "null" ]; then
+            echo "[Gemini API did not return release notes. Using fallback.]" >&2
+            NOTES="Release notes could not be generated automatically. Please review commits manually."
+          fi
+          echo "$NOTES" > RELEASE_NOTES.md
 
       - name: Commit and push changes
         if: steps.version.outputs.version-changed == 'true'
