@@ -2,7 +2,7 @@
   "name": "new-world-chat-ai",
   "description": "Generate Chatmessage for New World with Ai and Humor.",
   "private": false,
-  "version": "1.5.4",
+  "version": "1.6.0",
   "type": "module",
   "homepage": "https://involvex.github.io/new-world-chat-ai/",
   "author": {
@@ -80,7 +80,7 @@
   "build": {
     "appId": "com.involvex.new-world-chat-ai",
     "productName": "New World Chat AI",
-  "buildVersion": "1.5.2",
+    "buildVersion": "1.5.2",
     "directories": {
       "output": "dist-electron",
       "buildResources": "build"
