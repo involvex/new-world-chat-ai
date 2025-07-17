@@ -1,9 +1,9 @@
-# Release Notes for v1.6.1
+# Release Notes for v1.6.2
 
 ## Changes
-- Delete release directory
+- Merge branch 'main' of https://github.com/involvex/new-world-chat-ai
 
 ## Commit Details
-- **Commit**: 5c201a8af8418f576cf25152a2744f1606411a16
-- **Author**: involvex
-- **Date**: 2025-07-17 00:16:22 UTC
+- **Commit**: d459a90f308429c6e09c80301066f8e7f26e1ce1
+- **Author**: Involvex
+- **Date**: 2025-07-17 00:21:44 UTC
