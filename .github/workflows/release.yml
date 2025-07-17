@@ -50,6 +50,18 @@ jobs:
             dist-electron/*.exe
             dist-electron/*.exe.blockmap
 
+      - name: Generate release notes with Gemini AI
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          choco install jq -y
+          COMMITS=$(git log -10 --pretty=format:"%s" | jq -R -s -c '.')
+          PROMPT="Write concise, user-friendly release notes for these commits: $COMMITS"
+          RESPONSE=$(curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=$GEMINI_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"contents\":[{\"parts\":[{\"text\":\"$PROMPT\"}]}]}" )
+          echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text' > RELEASE_NOTES.md
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -60,5 +72,6 @@ jobs:
           files: |
             dist-electron/*.exe
             dist-electron/*.exe.blockmap
+          body_path: RELEASE_NOTES.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
