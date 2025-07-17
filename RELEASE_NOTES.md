@@ -1,9 +1,9 @@
-# Release Notes for v1.6.0
+# Release Notes for v1.6.1
 
 ## Changes
-- feat: update auto-version workflow permissions; bump version to 1.5.4 in README and release notes
+- Delete release directory
 
 ## Commit Details
-- **Commit**: 3704aa0483baf38e2d61e5e9d87b5f07044d0d29
-- **Author**: Involvex
-- **Date**: 2025-07-17 00:08:37 UTC
+- **Commit**: 5c201a8af8418f576cf25152a2744f1606411a16
+- **Author**: involvex
+- **Date**: 2025-07-17 00:16:22 UTC
