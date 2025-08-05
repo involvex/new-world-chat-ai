@@ -272,23 +272,30 @@ function WebApp() {
            <AppBar position="static" sx={{ backgroundColor: 'grey.900' }}>
             <Toolbar>
               <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-                <Box 
-                  sx={{ 
-                    width: 40, 
-                    height: 40, 
-                    borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #00bcd4 0%, #00d4aa 100%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mr: 2,
-                    fontSize: '20px',
-                    fontWeight: 'bold',
-                    color: 'white'
-                  }}
-                >
-                  NW
-                </Box>
+                                 <Box 
+                   sx={{ 
+                     width: 40, 
+                     height: 40, 
+                     borderRadius: '50%', 
+                     background: 'linear-gradient(135deg, #00bcd4 0%, #00d4aa 100%)',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     mr: 2,
+                     overflow: 'hidden'
+                   }}
+                 >
+                   <img 
+                     src="./icon.png" 
+                     alt="New World Chat AI Icon" 
+                     style={{ 
+                       width: '80%', 
+                       height: '80%', 
+                       objectFit: 'contain',
+                       borderRadius: '50%'
+                     }} 
+                   />
+                 </Box>
                 <Typography variant="h6" component="div">
                   New World Chat AI
                 </Typography>
@@ -334,11 +341,9 @@ function WebApp() {
                      justifyContent: 'center',
                      mx: 'auto',
                      mb: 3,
-                     fontSize: '36px',
-                     fontWeight: 'bold',
-                     color: 'white',
                      boxShadow: '0 8px 32px rgba(0, 188, 212, 0.4)',
                      position: 'relative',
+                     overflow: 'hidden',
                      '&::before': {
                        content: '""',
                        position: 'absolute',
@@ -366,7 +371,16 @@ function WebApp() {
                      },
                    }}
                  >
-                   NW
+                   <img 
+                     src="./icon.png" 
+                     alt="New World Chat AI Icon" 
+                     style={{ 
+                       width: '80%', 
+                       height: '80%', 
+                       objectFit: 'contain',
+                       borderRadius: '50%'
+                     }} 
+                   />
                  </Box>
                 <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
                   New World Chat AI
