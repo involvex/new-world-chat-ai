@@ -170,6 +170,49 @@ function WebApp() {
       secondary: {
         main: '#f50057',
       },
+      background: {
+        default: '#0f172a',
+        paper: '#1e293b',
+      },
+    },
+    typography: {
+      fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+      h4: {
+        fontWeight: 700,
+        letterSpacing: '-0.02em',
+      },
+      h6: {
+        fontWeight: 600,
+        letterSpacing: '-0.01em',
+      },
+    },
+    shape: {
+      borderRadius: 12,
+    },
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            textTransform: 'none',
+            fontWeight: 600,
+            borderRadius: 8,
+            padding: '8px 16px',
+          },
+          contained: {
+            boxShadow: '0 4px 14px 0 rgba(0, 188, 212, 0.3)',
+            '&:hover': {
+              boxShadow: '0 6px 20px 0 rgba(0, 188, 212, 0.4)',
+            },
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            backgroundImage: 'none',
+          },
+        },
+      },
     },
   });
 
@@ -260,59 +303,126 @@ function WebApp() {
             </Toolbar>
           </AppBar>
 
-          <Container maxWidth="lg" sx={{ mt: 4 }}>
-            <Paper 
-              elevation={3} 
-              sx={{ 
-                p: 3, 
-                backgroundColor: 'grey.800',
-                border: isDragging ? '2px dashed #00bcd4' : '2px dashed transparent',
-                transition: 'border 0.2s ease-in-out'
-              }}
+                     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+             <Paper 
+               elevation={0} 
+               sx={{ 
+                 p: 4, 
+                 backgroundColor: 'rgba(30, 41, 59, 0.8)',
+                 backdropFilter: 'blur(10px)',
+                 border: isDragging ? '2px dashed #00bcd4' : '1px solid rgba(148, 163, 184, 0.1)',
+                 transition: 'all 0.3s ease-in-out',
+                 borderRadius: 3,
+                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                 '&:hover': {
+                   boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
+                 }
+               }}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
             >
               <Box sx={{ textAlign: 'center', mb: 3 }}>
-                <Box 
-                  sx={{ 
-                    width: 80, 
-                    height: 80, 
-                    borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #00bcd4 0%, #00d4aa 100%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mx: 'auto',
-                    mb: 2,
-                    fontSize: '32px',
-                    fontWeight: 'bold',
-                    color: 'white',
-                    boxShadow: '0 4px 20px rgba(0, 188, 212, 0.3)'
-                  }}
-                >
-                  NW
-                </Box>
+                                 <Box 
+                   sx={{ 
+                     width: 100, 
+                     height: 100, 
+                     borderRadius: '50%', 
+                     background: 'linear-gradient(135deg, #00bcd4 0%, #00d4aa 50%, #00bcd4 100%)',
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     mx: 'auto',
+                     mb: 3,
+                     fontSize: '36px',
+                     fontWeight: 'bold',
+                     color: 'white',
+                     boxShadow: '0 8px 32px rgba(0, 188, 212, 0.4)',
+                     position: 'relative',
+                     '&::before': {
+                       content: '""',
+                       position: 'absolute',
+                       top: '-2px',
+                       left: '-2px',
+                       right: '-2px',
+                       bottom: '-2px',
+                       borderRadius: '50%',
+                       background: 'linear-gradient(135deg, #00bcd4, #00d4aa, #00bcd4)',
+                       zIndex: -1,
+                       opacity: 0.6,
+                       filter: 'blur(8px)',
+                     },
+                     animation: 'pulse 2s infinite',
+                     '@keyframes pulse': {
+                       '0%': {
+                         transform: 'scale(1)',
+                       },
+                       '50%': {
+                         transform: 'scale(1.05)',
+                       },
+                       '100%': {
+                         transform: 'scale(1)',
+                       },
+                     },
+                   }}
+                 >
+                   NW
+                 </Box>
                 <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
                   New World Chat AI
                 </Typography>
                                  <Typography variant="body1" color="text.secondary" gutterBottom>
                    Upload an image or drag and drop to generate chat messages
                  </Typography>
-                 <Box sx={{ mt: 2, p: 2, backgroundColor: 'rgba(255, 193, 7, 0.1)', borderRadius: '8px', border: '1px solid rgba(255, 193, 7, 0.3)' }}>
-                   <Typography variant="body2" color="warning.main" sx={{ textAlign: 'center' }}>
-                     💡 <strong>Demo Mode:</strong> No API key configured. Get your free API key from{' '}
-                     <a 
-                       href="https://aistudio.google.com/app/apikey" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       style={{ color: '#00bcd4', textDecoration: 'none' }}
-                     >
-                       Google AI Studio
-                     </a>
-                     {' '}for full AI-powered responses!
-                   </Typography>
-                 </Box>
+                                   <Box sx={{ 
+                    mt: 3, 
+                    p: 3, 
+                    background: 'linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%)',
+                    borderRadius: 2,
+                    border: '1px solid rgba(255, 193, 7, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '2px',
+                      background: 'linear-gradient(90deg, #ffc107, #ff9800, #ffc107)',
+                    }
+                  }}>
+                    <Typography variant="body2" color="warning.main" sx={{ 
+                      textAlign: 'center',
+                      fontWeight: 500,
+                      lineHeight: 1.6
+                    }}>
+                      💡 <strong>Demo Mode:</strong> No API key configured. Get your free API key from{' '}
+                      <a 
+                        href="https://aistudio.google.com/app/apikey" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        style={{ 
+                          color: '#00bcd4', 
+                          textDecoration: 'none',
+                          fontWeight: 'bold',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = '#00d4aa';
+                          e.currentTarget.style.textDecoration = 'underline';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = '#00bcd4';
+                          e.currentTarget.style.textDecoration = 'none';
+                        }}
+                      >
+                        Google AI Studio
+                      </a>
+                      {' '}for full AI-powered responses! 🚀
+                    </Typography>
+                  </Box>
               </Box>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
@@ -423,10 +533,18 @@ function WebApp() {
                          <Paper 
                            key={index} 
                            sx={{ 
-                             p: 2, 
-                             backgroundColor: 'grey.700',
+                             p: 3, 
+                             backgroundColor: 'rgba(55, 65, 81, 0.8)',
+                             backdropFilter: 'blur(10px)',
                              position: 'relative',
-                             '&:hover': { backgroundColor: 'grey.600' }
+                             border: '1px solid rgba(148, 163, 184, 0.1)',
+                             borderRadius: 2,
+                             transition: 'all 0.3s ease',
+                             '&:hover': { 
+                               backgroundColor: 'rgba(75, 85, 99, 0.9)',
+                               transform: 'translateY(-2px)',
+                               boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3)',
+                             }
                            }}
                          >
                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
