@@ -303,32 +303,78 @@ function WebApp() {
                   </Typography>
                 )}
 
-                {responses && responses.chatMessages && (
-                  <Box sx={{ mt: 3, width: '100%' }}>
-                    <Typography variant="h6" gutterBottom>
-                      Generated Messages:
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      {responses.chatMessages.map((message: any, index: number) => (
-                        <Paper 
-                          key={index} 
-                          sx={{ 
-                            p: 2, 
-                            backgroundColor: 'grey.700',
-                            cursor: 'pointer',
-                            '&:hover': { backgroundColor: 'grey.600' }
-                          }}
-                          onClick={() => {
-                            navigator.clipboard.writeText(message.text || message.message || message);
-                            setNotification('Message copied to clipboard!');
-                          }}
-                        >
-                          <Typography variant="body1">
-                            {message.text || message.message || message}
-                          </Typography>
-                        </Paper>
-                      ))}
-                    </Box>
+                                 {responses && responses.chatMessages && (
+                   <Box sx={{ mt: 3, width: '100%' }}>
+                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                       <Typography variant="h6">
+                         Generated Messages:
+                       </Typography>
+                       <Button
+                         size="small"
+                         variant="outlined"
+                         onClick={() => {
+                           const allMessages = responses.chatMessages
+                             .map((msg: any) => msg.text || msg.message || msg)
+                             .join('\n\n');
+                           navigator.clipboard.writeText(allMessages);
+                           setNotification('All messages copied to clipboard!');
+                         }}
+                         sx={{ 
+                           fontSize: '0.875rem',
+                           borderColor: 'grey.500',
+                           color: 'grey.300',
+                           '&:hover': {
+                             borderColor: '#00bcd4',
+                             color: '#00bcd4',
+                             backgroundColor: 'rgba(0, 188, 212, 0.1)'
+                           }
+                         }}
+                       >
+                         📋 Copy All
+                       </Button>
+                     </Box>
+                                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                       {responses.chatMessages.map((message: any, index: number) => (
+                         <Paper 
+                           key={index} 
+                           sx={{ 
+                             p: 2, 
+                             backgroundColor: 'grey.700',
+                             position: 'relative',
+                             '&:hover': { backgroundColor: 'grey.600' }
+                           }}
+                         >
+                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2 }}>
+                             <Typography variant="body1" sx={{ flex: 1 }}>
+                               {message.text || message.message || message}
+                             </Typography>
+                             <Button
+                               size="small"
+                               variant="outlined"
+                               onClick={() => {
+                                 navigator.clipboard.writeText(message.text || message.message || message);
+                                 setNotification('Message copied to clipboard!');
+                               }}
+                               sx={{ 
+                                 minWidth: 'auto',
+                                 px: 1,
+                                 py: 0.5,
+                                 fontSize: '0.75rem',
+                                 borderColor: 'grey.500',
+                                 color: 'grey.300',
+                                 '&:hover': {
+                                   borderColor: '#00bcd4',
+                                   color: '#00bcd4',
+                                   backgroundColor: 'rgba(0, 188, 212, 0.1)'
+                                 }
+                               }}
+                             >
+                               📋 Copy
+                             </Button>
+                           </Box>
+                         </Paper>
+                       ))}
+                     </Box>
                   </Box>
                 )}
 
