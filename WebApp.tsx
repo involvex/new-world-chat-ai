@@ -174,9 +174,28 @@ function WebApp() {
         <Box sx={{ flexGrow: 1 }}>
           <AppBar position="static" sx={{ backgroundColor: 'grey.900' }}>
             <Toolbar>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                New World Chat AI
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+                <Box 
+                  sx={{ 
+                    width: 40, 
+                    height: 40, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #00bcd4 0%, #00d4aa 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mr: 2,
+                    fontSize: '20px',
+                    fontWeight: 'bold',
+                    color: 'white'
+                  }}
+                >
+                  NW
+                </Box>
+                <Typography variant="h6" component="div">
+                  New World Chat AI
+                </Typography>
+              </Box>
               <IconButton
                 color="inherit"
                 title="Settings"
@@ -201,7 +220,26 @@ function WebApp() {
               onDragLeave={handleDragLeave}
             >
               <Box sx={{ textAlign: 'center', mb: 3 }}>
-                <Typography variant="h5" component="h1" gutterBottom>
+                <Box 
+                  sx={{ 
+                    width: 80, 
+                    height: 80, 
+                    borderRadius: '50%', 
+                    background: 'linear-gradient(135deg, #00bcd4 0%, #00d4aa 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mx: 'auto',
+                    mb: 2,
+                    fontSize: '32px',
+                    fontWeight: 'bold',
+                    color: 'white',
+                    boxShadow: '0 4px 20px rgba(0, 188, 212, 0.3)'
+                  }}
+                >
+                  NW
+                </Box>
+                <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
                   New World Chat AI
                 </Typography>
                 <Typography variant="body1" color="text.secondary" gutterBottom>
@@ -334,6 +372,84 @@ function WebApp() {
               message={notification}
             />
           </Container>
+          
+          {/* Footer */}
+          <Box 
+            component="footer" 
+            sx={{ 
+              mt: 6, 
+              py: 3, 
+              backgroundColor: 'grey.900',
+              borderTop: '1px solid',
+              borderColor: 'grey.700'
+            }}
+          >
+            <Container maxWidth="lg">
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: { xs: 'column', md: 'row' }, 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                gap: 2
+              }}>
+                <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Created with ❤️ by{' '}
+                    <a 
+                      href="https://github.com/involvex" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{ color: '#00bcd4', textDecoration: 'none' }}
+                    >
+                      Ina Venox
+                    </a>
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                    <a 
+                      href="https://involvex.github.io/new-world-chat-ai/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{ color: '#00bcd4', textDecoration: 'none' }}
+                    >
+                      involvex.github.io/new-world-chat-ai
+                    </a>
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Support the project:
+                  </Typography>
+                  <a 
+                    href="https://buymeacoffee.com/involvex" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '4px',
+                      color: '#00bcd4', 
+                      textDecoration: 'none',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      border: '1px solid #00bcd4',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#00bcd4';
+                      e.currentTarget.style.color = 'white';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = '#00bcd4';
+                    }}
+                  >
+                    ☕ Buy me a coffee
+                  </a>
+                </Box>
+              </Box>
+            </Container>
+          </Box>
         </Box>
       </ThemeProvider>
     </ErrorBoundary>
