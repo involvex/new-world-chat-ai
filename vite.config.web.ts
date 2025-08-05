@@ -1,25 +1,17 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
-import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 export default defineConfig({
-  plugins: [
-    react(),
-    viteStaticCopy({
-      targets: [
-        {
-          src: 'build/icon.png',
-          dest: '.'
-        }
-      ]
-    })
-  ],
+  plugins: [react()],
   base: '/new-world-chat-ai/',
   build: {
     outDir: 'docs',
-    emptyOutDir: true,
+    emptyOutDir: false,
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index-web.tsx')
+      },
       external: ['robotjs', 'electron', 'fs', 'path', 'os'],
       output: {
         globals: {
@@ -45,5 +37,9 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ['robotjs', 'electron']
+  },
+  server: {
+    port: 3000,
+    open: true
   }
 })

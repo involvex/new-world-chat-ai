@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { ApiResponse } from '../types';
+import { webSettingsService } from './webSettingsService';
 
 // Cache for API instance to avoid recreation
 let aiInstance: GoogleGenAI | null = null;
@@ -20,6 +21,18 @@ const getAIInstance = async (customApiKey?: string): Promise<GoogleGenAI> => {
       }
     } catch (error) {
       console.warn('Could not load stored API key:', error);
+    }
+  }
+
+  // If running in web mode, try to get the stored API key from web settings
+  if (!apiKeyToUse && typeof window !== 'undefined' && !window.electronAPI) {
+    try {
+      const storedKey = await webSettingsService.getGeminiApiKey();
+      if (storedKey && storedKey.trim()) {
+        apiKeyToUse = storedKey.trim();
+      }
+    } catch (error) {
+      console.warn('Could not load stored API key from web settings:', error);
     }
   }
 
@@ -109,12 +122,13 @@ const convertImageURLToBase64 = async (url: string): Promise<{ base64: string; m
   }
 };
 
-const responseSchema = {
+// Update responseSchema to accept dynamic messageCount
+const getResponseSchema = (messageCount: number) => ({
   type: Type.OBJECT,
   properties: {
     chatMessages: {
       type: Type.ARRAY,
-      description: "An array of 5 distinct chat messages.",
+      description: `An array of ${messageCount} distinct chat messages.`,
       items: {
         type: Type.OBJECT,
         properties: {
@@ -128,15 +142,19 @@ const responseSchema = {
     }
   },
   required: ["chatMessages"]
-};
+});
 
-export const generateChatResponses = async (imageUrl: string, isFunnier: boolean = false, customPrompt: string = ''): Promise<ApiResponse> => {
+export const generateChatResponses = async (
+  imageUrl: string,
+  isFunnier: boolean = false,
+  customPrompt: string = '',
+  messageCount: number = 5
+): Promise<ApiResponse> => {
   try {
     console.log('Generating chat responses for image:', imageUrl.substring(0, 50) + '...');
     
     const ai = await getAIInstance();
     const imageData = await convertImageURLToBase64(imageUrl);
-
     const imagePart = {
       inlineData: {
         mimeType: imageData.mimeType,
@@ -144,20 +162,25 @@ export const generateChatResponses = async (imageUrl: string, isFunnier: boolean
       },
     };
 
-    const basePrompt = customPrompt || "You are a hilarious AI assistant for the MMORPG New World. Your task is to generate funny, context-aware chat messages full of stupid jokes that a player could use. Based on the provided screenshot, generate 5 distinct chat messages. The messages should sound like a real player who isn't very serious and loves to joke around.";
-    
-    const funnyPrompt = customPrompt || "You are an absolutely UNHINGED AI comedian for the MMORPG New World. Your goal is to generate the most absurd, nonsensical, and stupidly funny chat messages imaginable based on the screenshot. Go completely over the top. Think chaotic goblin energy. The player wants to spam chat with pure nonsense.";
-    
+    // Prompt logic:
+    // - If customPrompt is set, always use it as the AI prompt (user-defined)
+    // - If not, use default basePrompt or funnyPrompt depending on isFunnier
+    // - Custom actions (customButtonLabel) should pass a customPrompt string for the AI prompt
+    let promptText = '';
     const punctuationRule = " CRUCIAL RULE: Every message you generate must not contain any special characters or punctuation. This means no commas, periods, apostrophes, quotation marks, hyphens, etc. Only use letters and spaces.";
-
-    const promptText = (isFunnier ? funnyPrompt : basePrompt) + punctuationRule;
-
+    if (customPrompt && customPrompt.trim()) {
+      // Always use user custom prompt, append punctuation rule
+      promptText = customPrompt + punctuationRule;
+    } else if (isFunnier) {
+      promptText = `You are an absolutely UNHINGED AI comedian for the MMORPG New World. Your goal is to generate the most absurd, nonsensical, and stupidly funny chat messages imaginable based on the screenshot. Go completely over the top. Think chaotic goblin energy. The player wants to spam chat with pure nonsense. Generate ${messageCount} distinct chat messages.` + punctuationRule;
+    } else {
+      promptText = `You are a hilarious AI assistant for the MMORPG New World. Your task is to generate funny, context-aware chat messages full of stupid jokes that a player could use. Based on the provided screenshot, generate ${messageCount} distinct chat messages. The messages should sound like a real player who isn't very serious and loves to joke around.` + punctuationRule;
+    }
     const textPart = {
       text: promptText
     };
-
     console.log('Sending request to Gemini API...');
-    
+    const responseSchema = getResponseSchema(messageCount);
     const result = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: { parts: [imagePart, textPart] },
@@ -169,9 +192,7 @@ export const generateChatResponses = async (imageUrl: string, isFunnier: boolean
         maxOutputTokens: 1000,
       }
     });
-    
     console.log('Received response from Gemini API');
-    
     const jsonString = result.text?.trim() || '';
     if (!jsonString) {
       console.warn('Empty response from API, retrying with simpler request...');
@@ -181,7 +202,7 @@ export const generateChatResponses = async (imageUrl: string, isFunnier: boolean
         contents: { 
           parts: [
             imagePart,
-            { text: "Generate 3 short chat messages for this New World screenshot. Return JSON with format: {\"chatMessages\":[{\"message\":\"text\"}]}. Use only letters and spaces." }
+            { text: `Generate ${messageCount} short chat messages for this New World screenshot. Return JSON with format: {\"chatMessages\":[{\"message\":\"text\"}]}. Use only letters and spaces.` }
           ] 
         },
         config: {
@@ -189,12 +210,10 @@ export const generateChatResponses = async (imageUrl: string, isFunnier: boolean
           maxOutputTokens: 500,
         }
       });
-      
       const retryJsonString = retryResult.text?.trim() || '';
       if (!retryJsonString) {
         throw new Error("Empty response received from API after retry.");
       }
-      
       // Use the retry result
       try {
         const retryJson = JSON.parse(retryJsonString) as ApiResponse;
@@ -211,39 +230,33 @@ export const generateChatResponses = async (imageUrl: string, isFunnier: boolean
       } catch (retryParseError) {
         console.error('Retry parse error:', retryParseError);
       }
-      
       throw new Error("Empty response received from API.");
     }
-    
     let parsedResponse: ApiResponse;
     try {
       parsedResponse = JSON.parse(jsonString) as ApiResponse;
     } catch (parseError) {
       throw new Error(`Failed to parse API response: ${parseError instanceof Error ? parseError.message : 'Unknown parsing error'}`);
     }
-    
     if (!parsedResponse.chatMessages || !Array.isArray(parsedResponse.chatMessages)) {
       throw new Error("Invalid response format from API. Expected 'chatMessages' array.");
     }
-    
     if (parsedResponse.chatMessages.length === 0) {
       throw new Error("No chat messages generated. Please try again.");
     }
-    
     // Further sanitize to ensure the API followed the rules and filter out empty messages
     parsedResponse.chatMessages = parsedResponse.chatMessages
       .map(item => ({
         message: item.message.replace(/[^a-zA-Z\s]/g, '').trim()
       }))
       .filter(item => item.message.length > 0);
-
     if (parsedResponse.chatMessages.length === 0) {
       throw new Error("All generated messages were invalid. Please try again.");
     }
-
     console.log('Successfully generated', parsedResponse.chatMessages.length, 'chat messages');
+    // Save the last used messageCount for further generations
+    (generateChatResponses as any).lastMessageCount = messageCount;
     return parsedResponse;
-
   } catch (error) {
     console.error("Error generating chat responses:", error);
     if (error instanceof Error) {

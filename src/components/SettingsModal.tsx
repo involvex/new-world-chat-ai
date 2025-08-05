@@ -1,4 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+
+
+
+
+
+
+
 
 interface HotkeyConfig {
   showHide: string;
@@ -22,16 +29,37 @@ interface AppConfig {
   startMinimized: boolean;
   showInTaskbar: boolean;
   geminiApiKey?: string;
+  customActionEnabled?: boolean;
+  customButtonLabel?: string;
 }
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfigUpdate: (config: AppConfig) => void;
+  autoGenerate: boolean;
+  setAutoGenerate: React.Dispatch<React.SetStateAction<boolean>>;
+  // Removed unused props
+  customButtonLabel: string;
+  setCustomButtonLabel: React.Dispatch<React.SetStateAction<string>>;
+  customActionEnabled: boolean;
+  setCustomActionEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfigUpdate }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({
+  isOpen,
+  onClose,
+  onConfigUpdate,
+  autoGenerate,
+  setAutoGenerate,
+  customButtonLabel,
+  setCustomButtonLabel,
+  customActionEnabled,
+  setCustomActionEnabled
+}) => {
   const [config, setConfig] = useState<AppConfig | null>(null);
+  // Hotkey recording state
+  const [recordingHotkey, setRecordingHotkey] = useState<keyof HotkeyConfig | null>(null);
   const [activeTab, setActiveTab] = useState<'hotkeys' | 'prompts' | 'general' | 'api'>('hotkeys');
   const [isAddingPrompt, setIsAddingPrompt] = useState(false);
   const [newPrompt, setNewPrompt] = useState({ name: '', prompt: '' });
@@ -41,6 +69,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
     if (isOpen && window.electronAPI) {
       loadConfig();
       loadApiKey();
+    }
+    // Sync config values to parent state when config changes
+    if (config) {
+      if (typeof config.customActionEnabled === 'boolean') {
+        setCustomActionEnabled(config.customActionEnabled);
+      }
+      if (typeof config.customButtonLabel === 'string') {
+        setCustomButtonLabel(config.customButtonLabel);
+      }
     }
   }, [isOpen]);
 
@@ -64,13 +101,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
 
   const saveConfig = async () => {
     if (!config) return;
-    
     try {
       await window.electronAPI.saveConfig(config);
+      await window.electronAPI.saveGeminiApiKey(geminiApiKey);
       onConfigUpdate(config);
       onClose();
     } catch (error) {
-      console.error('Failed to save config:', error);
+      console.error('Failed to save config or API key:', error);
     }
   };
 
@@ -98,6 +135,50 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
       }
     });
   };
+
+  // Start recording for a specific hotkey
+  const startRecordingHotkey = (key: keyof HotkeyConfig) => {
+    setRecordingHotkey(key);
+  };
+
+  // Keydown event handler
+  useEffect(() => {
+    if (!recordingHotkey) return;
+    let recording = true;
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (!recording) return;
+      event.preventDefault();
+      // Build hotkey string
+      const keys: string[] = [];
+      if (event.ctrlKey || event.metaKey) keys.push('CommandOrControl');
+      if (event.shiftKey) keys.push('Shift');
+      if (event.altKey) keys.push('Alt');
+      // Ignore modifier-only
+      if (
+        event.key === 'Control' ||
+        event.key === 'Meta' ||
+        event.key === 'Shift' ||
+        event.key === 'Alt'
+      ) {
+        return;
+      }
+      let keyName = event.key;
+      if (/^[a-zA-Z]$/.test(event.key)) {
+        keyName = event.key.toUpperCase();
+      }
+      keys.push(keyName);
+      const hotkeyString = keys.join('+');
+      handleHotkeyChange(recordingHotkey, hotkeyString);
+      setRecordingHotkey(null);
+      recording = false;
+      window.removeEventListener('keydown', handleKeydown);
+    };
+    window.addEventListener('keydown', handleKeydown);
+    return () => {
+      recording = false;
+      window.removeEventListener('keydown', handleKeydown);
+    };
+  }, [recordingHotkey]);
 
   const addCustomPrompt = async () => {
     if (!config || !newPrompt.name.trim() || !newPrompt.prompt.trim()) return;
@@ -140,8 +221,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
-      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
-        <div className="flex flex-col lg:flex-row h-full">
+      <div className="bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl max-h-[98vh] flex flex-col overflow-hidden">
+        <div className="flex flex-col lg:flex-row flex-1 min-h-0">
           {/* Sidebar */}
           <div className="w-full lg:w-64 bg-gray-900 p-3 sm:p-6 border-b lg:border-b-0 lg:border-r border-gray-700">
             <div className="flex justify-between items-center mb-4 sm:mb-6">
@@ -191,7 +272,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <div className="hidden lg:flex justify-end p-3 sm:p-4 border-b border-gray-700">
               <button
                 onClick={onClose}
@@ -201,8 +282,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
                 <i className="fas fa-times text-xl"></i>
               </button>
             </div>
-            
-            <div className="flex-1 p-3 sm:p-6 overflow-y-auto">
+            <div className="flex-1 p-3 sm:p-6 overflow-y-auto min-h-0" style={{ minHeight: 0 }}>
             {activeTab === 'hotkeys' && (
               <div>
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-200 mb-3 sm:mb-6">🔥 Hotkey Configuration</h3>
@@ -214,13 +294,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Show/Hide App
                       </label>
-                      <input
-                        type="text"
-                        value={config.hotkeys.showHide}
-                        onChange={(e) => handleHotkeyChange('showHide', e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
-                        placeholder="CommandOrControl+Shift+N"
-                      />
+                      <div className="flex items-center gap-2">
+                        <span className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm select-none">
+                          {config.hotkeys.showHide || 'Not set'}
+                        </span>
+                        <button
+                          className="px-2 py-1 bg-cyan-700 text-white rounded hover:bg-cyan-800 text-xs"
+                          onClick={() => startRecordingHotkey('showHide')}
+                        >Change</button>
+                        {recordingHotkey === 'showHide' && (
+                          <span className="ml-2 text-yellow-400 text-xs">Press any key combination...</span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-500 mt-1">Toggle app visibility from anywhere</p>
                     </div>
 
@@ -228,13 +313,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Generate Messages
                       </label>
-                      <input
-                        type="text"
-                        value={config.hotkeys.generate}
-                        onChange={(e) => handleHotkeyChange('generate', e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
-                        placeholder="CommandOrControl+Enter"
-                      />
+                      <div className="flex items-center gap-2">
+                        <span className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm select-none">
+                          {config.hotkeys.generate || 'Not set'}
+                        </span>
+                        <button
+                          className="px-2 py-1 bg-cyan-700 text-white rounded hover:bg-cyan-800 text-xs"
+                          onClick={() => startRecordingHotkey('generate')}
+                        >Change</button>
+                        {recordingHotkey === 'generate' && (
+                          <span className="ml-2 text-yellow-400 text-xs">Press any key combination...</span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-500 mt-1">Generate chat messages when app is focused</p>
                     </div>
 
@@ -242,13 +332,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Generate Funny Messages
                       </label>
-                      <input
-                        type="text"
-                        value={config.hotkeys.generateFunny}
-                        onChange={(e) => handleHotkeyChange('generateFunny', e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
-                        placeholder="CommandOrControl+Shift+Enter"
-                      />
+                      <div className="flex items-center gap-2">
+                        <span className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm select-none">
+                          {config.hotkeys.generateFunny || 'Not set'}
+                        </span>
+                        <button
+                          className="px-2 py-1 bg-cyan-700 text-white rounded hover:bg-cyan-800 text-xs"
+                          onClick={() => startRecordingHotkey('generateFunny')}
+                        >Change</button>
+                        {recordingHotkey === 'generateFunny' && (
+                          <span className="ml-2 text-yellow-400 text-xs">Press any key combination...</span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-500 mt-1">Generate extra funny messages</p>
                     </div>
                   </div>
@@ -258,13 +353,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         New Image
                       </label>
-                      <input
-                        type="text"
-                        value={config.hotkeys.newImage}
-                        onChange={(e) => handleHotkeyChange('newImage', e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
-                        placeholder="CommandOrControl+N"
-                      />
+                      <div className="flex items-center gap-2">
+                        <span className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm select-none">
+                          {config.hotkeys.newImage || 'Not set'}
+                        </span>
+                        <button
+                          className="px-2 py-1 bg-cyan-700 text-white rounded hover:bg-cyan-800 text-xs"
+                          onClick={() => startRecordingHotkey('newImage')}
+                        >Change</button>
+                        {recordingHotkey === 'newImage' && (
+                          <span className="ml-2 text-yellow-400 text-xs">Press any key combination...</span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-500 mt-1">Clear current image and start over</p>
                     </div>
 
@@ -272,13 +372,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         📸 Take Screenshot & Generate
                       </label>
-                      <input
-                        type="text"
-                        value={config.hotkeys.screenshot}
-                        onChange={(e) => handleHotkeyChange('screenshot', e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
-                        placeholder="CommandOrControl+Shift+S"
-                      />
+                      <div className="flex items-center gap-2">
+                        <span className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm select-none">
+                          {config.hotkeys.screenshot || 'Not set'}
+                        </span>
+                        <button
+                          className="px-2 py-1 bg-cyan-700 text-white rounded hover:bg-cyan-800 text-xs"
+                          onClick={() => startRecordingHotkey('screenshot')}
+                        >Change</button>
+                        {recordingHotkey === 'screenshot' && (
+                          <span className="ml-2 text-yellow-400 text-xs">Press any key combination...</span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-500 mt-1">Capture screen and automatically generate messages</p>
                     </div>
                     
@@ -407,17 +512,68 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
             {activeTab === 'general' && (
               <div>
                 <h3 className="text-2xl font-bold text-gray-200 mb-6">General Settings</h3>
-                
                 <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold text-gray-200">Auto-generate on Paste</h4>
+                      <p className="text-sm text-gray-400">Automatically generate chat messages when you paste an image</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={autoGenerate}
+                        onChange={e => setAutoGenerate(e.target.checked)}
+                        aria-label="Toggle auto-generation on paste"
+                        title="Enable or disable auto-generation when pasting images"
+                      />
+                      <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-300/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+                    </label>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold text-gray-200">Enable Custom Action Button</h4>
+                      <p className="text-sm text-gray-400">Show a custom action button for your selected prompt</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={!!customActionEnabled}
+                        onChange={e => {
+                          setCustomActionEnabled(e.target.checked);
+                          setConfig({ ...config, customActionEnabled: e.target.checked });
+                        }}
+                        aria-label="Toggle custom action button"
+                        title="Enable or disable custom action button"
+                      />
+                      <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                    </label>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-semibold text-gray-200">Custom Button Label</h4>
+                      <p className="text-sm text-gray-400">Change the label of the custom action button</p>
+                    </div>
+                    <input
+                      type="text"
+                      value={customButtonLabel}
+                      onChange={e => {
+                        setCustomButtonLabel(e.target.value);
+                        setConfig({ ...config, customButtonLabel: e.target.value });
+                      }}
+                      className="bg-gray-800 text-gray-200 border border-gray-600 rounded px-2 py-1 w-full sm:w-48"
+                      placeholder="Custom Action"
+                      aria-label="Custom button label"
+                      title="Change the label of the custom action button"
+                    />
+                  </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-semibold text-gray-200">Start Minimized</h4>
                       <p className="text-sm text-gray-400">Start the app minimized to system tray</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <label htmlFor="start-minimized-checkbox" className="sr-only">
-                        Start Minimized
-                      </label>
                       <input
                         id="start-minimized-checkbox"
                         type="checkbox"
@@ -430,7 +586,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
                       <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-300/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
                     </label>
                   </div>
-
                   <div className="flex items-center justify-between">
                     <div>
                       <h4 className="font-semibold text-gray-200">Show in Taskbar</h4>
@@ -536,8 +691,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onConfig
               </div>
             )}
 
-            {/* Footer */}
-            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 pt-4 sm:pt-6 mt-4 sm:mt-6 border-t border-gray-700">
+            {/* Sticky Footer */}
+            <div className="sticky bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-10 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 pt-4 sm:pt-6 pb-4 px-3 sm:px-6">
               <button
                 onClick={onClose}
                 className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors text-sm sm:text-base"

@@ -39,6 +39,7 @@ interface ElectronAPI {
   invoke: (channel: string, data?: any) => Promise<any>;
   platform: string;
   versions: any;
+  generateChatMessages: (options: { funninessLevel: number; customPrompt?: string; imageToUse?: string; messageCount?: number }) => Promise<ApiResponse>;
 }
 
 interface HotkeyConfig {
@@ -65,6 +66,7 @@ interface AppConfig {
   geminiApiKey?: string;
 }
 
+// BUG FIX: Add missing 'interface' keyword for SavedMessageSet
 interface SavedMessageSet {
   id: string;
   name: string;

@@ -1,18 +1,271 @@
+/* index.css */
+
+/* Notification button styles - REMOVED, Snackbar handles this */
+/* .notification-btn {
+  background: #00ccff;
+  color: #fff;
+  border: 2px solid #000000;
+  border-radius: 1rem;
+  padding: 0.4rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(6,182,212,0.10);
+  transition: background 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+.notification-btn:hover, .notification-btn:focus {
+  background: #0e7490;
+  box-shadow: 0 4px 16px rgba(6,182,212,0.18);
+} */
+
+/* This class is for the generated messages, which are now MuiListItems.
+   The styles are moved to MuiListItem in the theme. */
+/* .generated-message {
+  background: hsl(246, 100%, 50%);
+  color: #fff383;
+  border-radius: 1rem;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 0.5rem;
+  box-shadow: none;
+  border: 1px solid #0891b2;
+  font-size: 1.05rem;
+  word-break: break-word;
+} */
+
+/* Material Design Navbar Styles - AppBar is used instead, styles moved to theme */
+/* .material-navbar {
+  box-shadow: 0 4px 16px rgba(6,182,212,0.10), 0 1.5px 4px rgba(0,0,0,0.08);
+  border-top-right-radius: 1.25rem;
+  border-bottom-right-radius: 1.25rem;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  min-height: 64px;
+  width: 60vw;
+  max-width: 480px;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: auto;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.5rem 2rem;
+  border-right: 2px solid #0891b2;
+  border-left: none;
+  border-top: none;
+  border-bottom: none;
+} */
+
+/* All .material-nav-btn styles are moved to MuiButton in theme - REMOVED */
+/* .material-nav-btn {
+  background: #0220a38a;
+  color: #0891b2;
+  border: 2px solid #000000;
+  outline: 2px solid #000000;
+  margin-left: 0.75rem;
+  margin-right: 0.25rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 1.5rem;
+  font-size: 10px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(6,182,212,0.08);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.material-nav-btn:hover, .material-nav-btn:focus {
+  background: #e0f7fa;
+  color: #164e63;
+  box-shadow: 0 4px 16px rgba(6,182,212,0.18);
+}
+.material-nav-btn-danger {
+  background: #f44336;
+  color: #fff;
+}
+.material-nav-btn-danger:hover, .material-nav-btn-danger:focus {
+  background: #b71c1c;
+  color: #fff;
+}
+.material-nav-icon {
+  left: 0;
+  align-content: start;
+  margin-left: 0%;
+  position: fixed;
+  width: 8.5rem;
+  height: 8.5rem;
+  border-radius: 0.35rem;
+  box-shadow: 0 2px 8px rgba(6,182,212,0.15);
+  border: 2px solid #000000;
+}
+.material-nav-text, .material-nav-title {
+  left: 0;
+  align-content: start;
+  margin-left: 55px;
+  position: fixed;
+  display: inline-block;
+  align-self: start;
+  text-align: left;
+
+}
+.material-nav-title.material-nav-title:h1 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.material-nav-btn {
+  background: #019bc28a;
+  color: #000000dc;
+  border: 2px solid #000000;
+  outline: none;
+  margin-left: 0.75rem;
+  margin-right: 0.25rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 1.5rem;
+  font-size: 15px;
+  font-weight: 600;
+  min-width: 120px;
+  box-shadow: 0 2px 8px rgba(6,182,212,0.10), 0 1.5px 4px rgba(0,0,0,0.08);
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.material-nav-btn-primary {
+  background: #0891b2;
+  color: #fff;
+}
+.material-nav-btn-funnier {
+  background: #a21caf;
+  color: #fff;
+}
+.material-nav-btn-custom {
+  background: #f59e42;
+  color: #fff;
+}
+.material-nav-btn-save {
+  background: #059669;
+  color: #fff;
+}
+.material-nav-btn-danger {
+  background: #dc2626;
+  color: #fff;
+}
+.material-nav-btn:hover, .material-nav-btn:focus {
+  box-shadow: 0 4px 16px rgba(6,182,212,0.18), 0 2px 8px rgba(0,0,0,0.12);
+  background: #0369a1;
+  color: #fff;
+}
+.material-nav-btn-primary:hover, .material-nav-btn-primary:focus {
+  background: #0e7490;
+}
+.material-nav-btn-funnier:hover, .material-nav-btn-funnier:focus {
+  background: #be185d;
+}
+.material-nav-btn-custom:hover, .material-nav-btn-custom:focus {
+  background: #ea580c;
+}
+.material-nav-btn-save:hover, .material-nav-btn-save:focus {
+  background: #047857;
+}
+.material-nav-btn-danger:hover, .material-nav-btn-danger:focus {
+  background: #b91c1c;
+} */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for New World Chat AI */
+/* Error boundary background */
+.bg-red-900\/50 {
+  background-color: rgba(127, 29, 29, 0.5);
+}
+
+/* Notification z-index - REMOVED, Snackbar handles this */
+/* .z-60 {
+  z-index: 60;
+} */
+
+/* Responsive tweaks for modals and notifications */
+.max-w-md {
+  max-width: 28rem;
+}
+.max-w-sm {
+  max-width: 24rem;
+}
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+}
+.footer-app-icon {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 0.35rem;
+  box-shadow: 0 2px 8px rgba(6,182,212,0.15);
+  border: 2px solid #22d3ee;
+  margin-right: 0.5rem;
+  margin-left: 0;
+  vertical-align: middle;
+  overflow-y: auto;
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background: #111827; /* Matches theme.palette.background.default */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  margin-bottom: 0;
+  z-index: 100;
+}
+
+/* .header-box { REMOVED, AppBar handles this
+  background: linear-gradient(90deg, #0e172a 0%, #164e63 100%);
+  border-radius: 0.75rem;
+  border: 1px solid #0891b2;
+  box-shadow: 0 2px 12px rgba(6,182,212,0.10);
+  padding: 1.5rem 1.25rem;
+  margin-bottom: 1.5rem;
+
+} */
 /* Web-specific styles with responsive design */
 * {
   box-sizing: border-box;
 }
+/* header { REMOVED, AppBar handles this
+  
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 160px;
+  background: #111827;
+  padding: 1rem;
+  z-index: 50;
+}
+header .h1 {
+  font-size: 5.5rem;
+  font-weight: bold;
+  margin: 0;
+} */
 
 body {
   margin: 0;
   padding: 0;
-  background: #111827;
-  color: #e5e7eb;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #111827; /* Matches theme.palette.background.default */
+  color: #e5e7eb; /* Matches theme.palette.text.primary */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* Matches theme.typography.fontFamily */
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+
 }
 
 #root {

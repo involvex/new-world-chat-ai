@@ -17,6 +17,7 @@ export interface SavedMessageSet {
   messages: ChatMessage[];
   tags?: string[];
   isFavorite?: boolean;
+  customPrompt?: string;
 }
 
 export interface MessageHistory {

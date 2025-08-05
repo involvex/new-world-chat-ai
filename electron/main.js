@@ -1,5 +1,16 @@
 const electron = require('electron');
 const { app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, shell, clipboard, desktopCapturer, screen } = electron;
+
+// IPC handler for saving a single hotkey
+ipcMain.handle('save-hotkey', (event, key, value) => {
+  if (config.hotkeys[key] !== undefined) {
+    config.hotkeys[key] = value;
+    saveConfig(config);
+    registerGlobalShortcuts();
+    return true;
+  }
+  return false;
+});
 const { join } = require('path');
 const fs = require('fs');
 const { exec } = require('child_process'); // Import exec for tasklist
@@ -1492,6 +1503,15 @@ ipcMain.handle('capture-display-screenshot', async (event, displayId) => {
     console.error('Display-specific screenshot failed:', error);
     return { success: false, error: error.message, displayId };
   }
+});
+
+ipcMain.handle('get-last-message-set', () => {
+  const history = loadMessageHistory();
+  if (history && Array.isArray(history.savedSets) && history.savedSets.length > 0) {
+    // Return the most recent saved set (first in array)
+    return history.savedSets[0];
+  }
+  return null;
 });
 
 

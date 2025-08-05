@@ -17,7 +17,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:web": "vite build --config vite.config.web.ts",
+    "build:web": "node scripts/build-web.js",
     "build:analyze": "vite build --mode analyze",
     "preview": "vite preview",
     "electron": "electron .",
@@ -45,7 +45,7 @@
     "check:env": "node scripts/build-validator.cjs env",
     "clean": "node scripts/robust-cleanup.cjs all",
     "clean:all": "node scripts/robust-cleanup.cjs all",
-    "clean:build": "node scripts/robust-cleanup.cjs build",
+    "clean:build": "rimraf dist-electron",
     "clean:cache": "node scripts/robust-cleanup.cjs cache",
     "clean:temp": "node scripts/robust-cleanup.cjs temp",
     "kill:processes": "node scripts/robust-cleanup.cjs kill",
@@ -55,32 +55,46 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@fontsource/roboto": "^5.2.6",
     "@google/genai": "^1.9.0",
+    "@material/web": "^2.3.0",
+    "@mui/icons-material": "^7.2.0",
+    "@mui/material": "^7.2.0",
+    "@mui/styled-engine-sc": "^7.2.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@tailwindcss/vite": "^4.1.11",
+    "@toolpad/core": "^0.16.0",
     "@types/node": "^24.0.14",
     "@types/react": "^19.1.8",
+    "lit-html": "^3.3.1",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "rollup": "^4.45.1",
+    "styled-components": "^6.1.19",
+    "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
     "@electron/rebuild": "^4.0.1",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
-    "concurrently": "^8.2.2",
+    "concurrently": "^9.2.0",
     "cross-env": "^7.0.3",
-    "electron": "^29.4.6",
+    "electron": "^37.2.3",
     "electron-builder": "^26.0.18",
     "png-to-ico": "^2.1.8",
-    "rimraf": "^5.0.10",
+    "rimraf": "^6.0.1",
     "robotjs": "^0.6.0",
     "typescript": "^5.8.3",
-    "vite": "^6.3.5",
+    "vite": "^7.0.4",
     "vite-plugin-static-copy": "^3.1.1",
     "wait-on": "^8.0.3"
   },
   "build": {
     "appId": "com.involvex.new-world-chat-ai",
     "productName": "New World Chat AI",
-    "buildVersion": "1.5.2",
+    "buildVersion": "1.7.4",
     "directories": {
       "output": "dist-electron",
       "buildResources": "build"
@@ -89,11 +103,13 @@
       "dist/**/*",
       "electron/**/*",
       "package.json",
+      "build/**/*",
       "!node_modules/**/*",
       "!src/**/*",
       "!scripts/**/*",
       "!*.log",
-      "build/icon.png"
+      "build/icon.png",
+      "bundle.js"
     ],
     "extraResources": [
       {
@@ -105,7 +121,7 @@
       }
     ],
     "compression": "normal",
-    "nodeGypRebuild": true,
+    "nodeGypRebuild": false,
     "buildDependenciesFromSource": true,
     "npmRebuild": true,
     "win": {

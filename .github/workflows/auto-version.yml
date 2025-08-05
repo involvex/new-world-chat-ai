@@ -119,7 +119,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y jq
           COMMITS=$(git log -10 --pretty=format:"%s" | jq -R -s -c '.')
-          PROMPT="Write concise, user-friendly release notes for these commits: $COMMITS"
+          PROMPT="Write detailedrelease notes for these commits: $COMMITS"
           # Use jq to build the JSON payload safely
           jq -n --arg prompt "$PROMPT" \
             '{contents: [{parts: [{text: $prompt}]}]}' > payload.json

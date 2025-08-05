@@ -3,9 +3,14 @@ import { memo } from 'react';
 interface AboutModalProps {
   isOpen: boolean;
   onClose: () => void;
+  appVersion?: string;
+  features?: string[];
+  author?: string;
+  customButtonLabel?: string;
+  customPromptText?: string;
 }
 
-const AboutModal = memo<AboutModalProps>(({ isOpen, onClose }) => {
+const AboutModal = memo<AboutModalProps>(({ isOpen, onClose, appVersion, features, author }) => {
   if (!isOpen) return null;
 
   const handleGitHubClick = () => {
@@ -43,11 +48,26 @@ const AboutModal = memo<AboutModalProps>(({ isOpen, onClose }) => {
             <div className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
               New World Chat AI
             </div>
-            <div className="text-lg text-gray-300">Version 1.2.0</div>
+            <div className="text-lg text-gray-300">Version {typeof appVersion === 'string' ? appVersion : '1.0.0'}{window.electronAPI ? ' (Desktop)' : ''}</div>
             <div className="text-sm text-gray-400">
-              Created with ❤️ by <span className="text-cyan-400 font-semibold">Ina Venox</span>
+              Created by <span className="text-cyan-400 font-semibold">{author || 'Ina Venox'}</span>
             </div>
           </div>
+
+
+          {features && features.length > 0 && (
+            <div className="bg-gray-700/50 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">🎮 Features</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-300">
+                {features.map((f, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="text-green-400">•</span>
+                    {f}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Description */}
           <div className="text-center text-gray-300 max-w-lg mx-auto">

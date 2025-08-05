@@ -2,6 +2,8 @@ const { contextBridge, ipcRenderer } = require('electron');
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('electronAPI', {
+  // Hotkey management
+  saveHotkey: (key, value) => ipcRenderer.invoke('save-hotkey', key, value),
   // IPC communication methods
   send: (channel, data) => {
     // Whitelist channels for security
@@ -49,6 +51,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   exportMessages: (messageSet) => ipcRenderer.invoke('export-messages', messageSet),
   shareMessages: (messageSet, shareType) => ipcRenderer.invoke('share-messages', messageSet, shareType),
   backupMessageHistory: () => ipcRenderer.invoke('backup-message-history'),
+  getLastMessageSet: () => ipcRenderer.invoke('get-last-message-set'),
   
   // Screenshot functionality
   takeScreenshot: () => ipcRenderer.invoke('take-screenshot'),

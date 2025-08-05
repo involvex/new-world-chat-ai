@@ -126,10 +126,13 @@ const MessageHistoryModal = memo<MessageHistoryModalProps>(({ isOpen, onClose, o
 
   // Filter and sort message sets
   const filteredAndSortedSets = messageHistory.savedSets
-    .filter(set => 
-      set.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      set.messages.some(msg => msg.message.toLowerCase().includes(searchTerm.toLowerCase()))
-    )
+    .filter(set => {
+      const nameMatch = typeof set.name === 'string' && set.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const messageMatch = Array.isArray(set.messages) && set.messages.some(msg =>
+        typeof msg.message === 'string' && msg.message.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      return nameMatch || messageMatch;
+    })
     .sort((a, b) => {
       switch (sortBy) {
         case 'newest':

@@ -10,6 +10,7 @@ exports.default = async function(context) {
   const { electronPlatformName, appOutDir } = context;
   
   console.log(`🔧 Running after-pack for ${electronPlatformName}...`);
+  console.log('appOutDir:', appOutDir);
   
   try {
     // Verify icon files are properly included
