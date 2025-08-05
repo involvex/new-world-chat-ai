@@ -45,6 +45,7 @@ function WebApp() {
   const [responses, setResponses] = useState<any>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   // --- Handlers ---
   const triggerFileInput = useCallback(() => {
@@ -67,6 +68,11 @@ function WebApp() {
       try {
         const response = await generateChatResponses(imageToUse || '', makeItFunnier, customPrompt, messageCount);
         setResponses(response);
+        // Check if we're in demo mode by looking for demo messages
+        const isDemo = response.chatMessages?.some((msg: any) => 
+          ['look at this screenshot', 'wow what a view', 'this game is amazing'].includes(msg.message || msg.text)
+        );
+        setIsDemoMode(isDemo);
       } catch (err: any) {
         setError(err?.message || 'Failed to generate chat messages');
       } finally {
@@ -242,9 +248,23 @@ function WebApp() {
                 <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
                   New World Chat AI
                 </Typography>
-                <Typography variant="body1" color="text.secondary" gutterBottom>
-                  Upload an image or drag and drop to generate chat messages
-                </Typography>
+                                 <Typography variant="body1" color="text.secondary" gutterBottom>
+                   Upload an image or drag and drop to generate chat messages
+                 </Typography>
+                 <Box sx={{ mt: 2, p: 2, backgroundColor: 'rgba(255, 193, 7, 0.1)', borderRadius: '8px', border: '1px solid rgba(255, 193, 7, 0.3)' }}>
+                   <Typography variant="body2" color="warning.main" sx={{ textAlign: 'center' }}>
+                     💡 <strong>Demo Mode:</strong> No API key configured. Get your free API key from{' '}
+                     <a 
+                       href="https://aistudio.google.com/app/apikey" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       style={{ color: '#00bcd4', textDecoration: 'none' }}
+                     >
+                       Google AI Studio
+                     </a>
+                     {' '}for full AI-powered responses!
+                   </Typography>
+                 </Box>
               </Box>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
@@ -306,9 +326,26 @@ function WebApp() {
                                  {responses && responses.chatMessages && (
                    <Box sx={{ mt: 3, width: '100%' }}>
                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                       <Typography variant="h6">
-                         Generated Messages:
-                       </Typography>
+                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                         <Typography variant="h6">
+                           Generated Messages:
+                         </Typography>
+                         {isDemoMode && (
+                           <Box
+                             sx={{
+                               px: 1,
+                               py: 0.5,
+                               backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                               border: '1px solid #ffc107',
+                               borderRadius: '4px',
+                               fontSize: '0.75rem',
+                               color: '#ffc107'
+                             }}
+                           >
+                             DEMO MODE
+                           </Box>
+                         )}
+                       </Box>
                        <Button
                          size="small"
                          variant="outlined"

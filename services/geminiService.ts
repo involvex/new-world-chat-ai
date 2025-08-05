@@ -9,7 +9,45 @@ let currentApiKey: string | null = null;
 // No default API key for security - users must provide their own
 const DEFAULT_API_KEY = ''; // Users must configure their own API key
 
-const getAIInstance = async (customApiKey?: string): Promise<GoogleGenAI> => {
+// Demo mode responses for when no API key is available
+const getDemoResponses = (isFunnier: boolean = false, messageCount: number = 5): ApiResponse => {
+  const normalMessages = [
+    "look at this screenshot",
+    "wow what a view",
+    "this game is amazing",
+    "check out my character",
+    "having fun in new world",
+    "great graphics",
+    "love this game",
+    "awesome screenshot",
+    "new world is the best",
+    "playing with friends"
+  ];
+
+  const funnyMessages = [
+    "my character looks like a potato",
+    "i fell off a cliff again",
+    "why do i keep dying",
+    "this game hates me",
+    "i am the worst player ever",
+    "my character is having a bad day",
+    "i got lost again",
+    "this is fine everything is fine",
+    "i meant to do that",
+    "oops another death"
+  ];
+
+  const messages = isFunnier ? funnyMessages : normalMessages;
+  const shuffled = [...messages].sort(() => Math.random() - 0.5);
+  
+  return {
+    chatMessages: shuffled.slice(0, messageCount).map(message => ({
+      message: message
+    }))
+  };
+};
+
+const getAIInstance = async (customApiKey?: string): Promise<GoogleGenAI | null> => {
   let apiKeyToUse = customApiKey;
 
   // If running in Electron, try to get the stored API key
@@ -41,19 +79,15 @@ const getAIInstance = async (customApiKey?: string): Promise<GoogleGenAI> => {
     apiKeyToUse = process.env.API_KEY;
   }
 
-  // Fallback to default API key (empty - user must configure)
-  if (!apiKeyToUse) {
-    throw new Error(
-      'No Gemini API key configured. Please:\n' +
-      '1. Get a free API key from https://aistudio.google.com/app/apikey\n' +
-      '2. Configure it in the app settings\n' +
-      '3. Or set the GEMINI_API_KEY environment variable'
-    );
+  // If no API key is available, return null to indicate demo mode
+  if (!apiKeyToUse || !apiKeyToUse.trim()) {
+    console.log('No API key available, will use demo mode');
+    return null;
   }
 
   // Recreate instance if API key changed
   if (!aiInstance || currentApiKey !== apiKeyToUse) {
-    console.log('Creating new AI instance with', apiKeyToUse === DEFAULT_API_KEY ? 'default' : 'custom', 'API key');
+    console.log('Creating new AI instance with custom API key');
     aiInstance = new GoogleGenAI({ apiKey: apiKeyToUse });
     currentApiKey = apiKeyToUse;
   }
@@ -154,6 +188,15 @@ export const generateChatResponses = async (
     console.log('Generating chat responses for image:', imageUrl.substring(0, 50) + '...');
     
     const ai = await getAIInstance();
+    
+    // If no AI instance (no API key), use demo mode
+    if (!ai) {
+      console.log('Using demo mode - no API key available');
+      // Simulate API processing time
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return getDemoResponses(isFunnier, messageCount);
+    }
+    
     const imageData = await convertImageURLToBase64(imageUrl);
     const imagePart = {
       inlineData: {
