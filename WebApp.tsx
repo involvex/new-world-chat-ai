@@ -177,8 +177,56 @@ function WebApp() {
     <ErrorBoundary>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Box sx={{ flexGrow: 1 }}>
-          <AppBar position="static" sx={{ backgroundColor: 'grey.900' }}>
+                 <Box sx={{ flexGrow: 1 }}>
+           {/* GitHub Banner */}
+           <Box 
+             sx={{ 
+               backgroundColor: 'grey.800',
+               borderBottom: '1px solid',
+               borderColor: 'grey.700',
+               py: 1
+             }}
+           >
+             <Container maxWidth="lg">
+               <Box sx={{ 
+                 display: 'flex', 
+                 justifyContent: 'center', 
+                 alignItems: 'center',
+                 gap: 1
+               }}>
+                 <Typography variant="body2" color="text.secondary">
+                   🌟 Star this project on
+                 </Typography>
+                 <a 
+                   href="https://github.com/involvex/new-world-chat-ai" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   style={{ 
+                     display: 'inline-flex', 
+                     alignItems: 'center', 
+                     gap: '4px',
+                     color: '#00bcd4', 
+                     textDecoration: 'none',
+                     fontWeight: 'bold',
+                     transition: 'all 0.2s ease'
+                   }}
+                   onMouseEnter={(e) => {
+                     e.currentTarget.style.color = '#00d4aa';
+                   }}
+                   onMouseLeave={(e) => {
+                     e.currentTarget.style.color = '#00bcd4';
+                   }}
+                 >
+                   GitHub
+                 </a>
+                 <Typography variant="body2" color="text.secondary">
+                   to support development! 🚀
+                 </Typography>
+               </Box>
+             </Container>
+           </Box>
+           
+           <AppBar position="static" sx={{ backgroundColor: 'grey.900' }}>
             <Toolbar>
               <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
                 <Box 
