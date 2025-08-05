@@ -31,6 +31,21 @@ exports.default = async function(context) {
       }
     }
     
+    // Copy PowerShell script to build directory
+    const psScriptSource = path.join(process.cwd(), 'fokusnewworldscreenshot.ps1');
+    const psScriptDest = path.join(buildDir, 'fokusnewworldscreenshot.ps1');
+    
+    if (fs.existsSync(psScriptSource)) {
+      try {
+        fs.copyFileSync(psScriptSource, psScriptDest);
+        console.log(`✅ PowerShell script copied to build directory`);
+      } catch (error) {
+        console.error(`❌ Failed to copy PowerShell script: ${error.message}`);
+      }
+    } else {
+      console.warn(`⚠️  PowerShell script not found at source: ${psScriptSource}`);
+    }
+    
     // Log build completion
     console.log(`✅ After-pack completed for ${electronPlatformName}`);
     

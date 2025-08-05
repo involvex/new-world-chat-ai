@@ -197,6 +197,12 @@ async function captureScreenshot() {
       const psScriptPath = isDev
         ? join(__dirname, '../fokusnewworldscreenshot.ps1')
         : join(process.resourcesPath, 'build/fokusnewworldscreenshot.ps1');
+      
+      // Check if the script exists
+      if (!fs.existsSync(psScriptPath)) {
+        console.warn(`PowerShell script not found at: ${psScriptPath}`);
+        throw new Error('PowerShell script not found');
+      }
       await new Promise((resolve, reject) => {
         exec(`powershell -ExecutionPolicy Bypass -File "${psScriptPath}"`, { windowsHide: true }, (error, stdout, stderr) => {
           if (error) {
