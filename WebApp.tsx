@@ -109,7 +109,13 @@ function WebApp() {
     setIsDragging(false);
     const files = event.dataTransfer.files;
     if (files.length > 0) {
-      processImageFile(files[0], autoGenerate);
+      const file = files[0];
+      if (file.type.startsWith('image/')) {
+        processImageFile(file, autoGenerate);
+        setNotification('Image dropped successfully!');
+      } else {
+        setError('Please drop an image file');
+      }
     }
   }, [processImageFile, autoGenerate]);
 
@@ -122,6 +128,52 @@ function WebApp() {
     event.preventDefault();
     setIsDragging(false);
   }, []);
+
+  // Handle paste events (Ctrl+V)
+  const handlePaste = useCallback((event: ClipboardEvent) => {
+    const items = event.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) {
+          processImageFile(file, autoGenerate);
+          setNotification('Image pasted successfully!');
+          event.preventDefault();
+          break;
+        }
+      }
+    }
+  }, [processImageFile, autoGenerate]);
+
+  // Handle keyboard events for Ctrl+V
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
+      // The paste event will be handled by handlePaste
+      return;
+    }
+  }, []);
+
+  // Add global event listeners for paste and keyboard
+  useEffect(() => {
+    const handleGlobalPaste = (event: ClipboardEvent) => {
+      handlePaste(event);
+    };
+
+    const handleGlobalKeyDown = (event: KeyboardEvent) => {
+      handleKeyDown(event);
+    };
+
+    document.addEventListener('paste', handleGlobalPaste);
+    document.addEventListener('keydown', handleGlobalKeyDown);
+
+    return () => {
+      document.removeEventListener('paste', handleGlobalPaste);
+      document.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, [handlePaste, handleKeyDown]);
 
   const resetSelection = useCallback(() => {
     setScreenshotUrl(undefined);
@@ -320,7 +372,8 @@ function WebApp() {
                  border: isDragging ? '2px dashed #00bcd4' : '1px solid rgba(148, 163, 184, 0.1)',
                  transition: 'all 0.3s ease-in-out',
                  borderRadius: 3,
-                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                 boxShadow: isDragging ? '0 16px 48px rgba(0, 188, 212, 0.4)' : '0 8px 32px rgba(0, 0, 0, 0.3)',
+                 position: 'relative',
                  '&:hover': {
                    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)',
                  }
@@ -329,6 +382,35 @@ function WebApp() {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
             >
+              {/* Drag overlay */}
+              {isDragging && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 188, 212, 0.1)',
+                    border: '2px dashed #00bcd4',
+                    borderRadius: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1,
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  <Box sx={{ textAlign: 'center', p: 3 }}>
+                    <Typography variant="h5" sx={{ color: '#00bcd4', fontWeight: 'bold', mb: 2 }}>
+                      📁 Drop Image Here
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: '#00bcd4' }}>
+                      Release to upload your image
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
               <Box sx={{ textAlign: 'center', mb: 3 }}>
                                  <Box 
                    sx={{ 
@@ -386,7 +468,7 @@ function WebApp() {
                   New World Chat AI
                 </Typography>
                                  <Typography variant="body1" color="text.secondary" gutterBottom>
-                   Upload an image or drag and drop to generate chat messages
+                   Upload an image, drag & drop, or paste (Ctrl+V) to generate chat messages
                  </Typography>
                                    <Box sx={{ 
                     mt: 3, 
